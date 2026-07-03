@@ -17,6 +17,7 @@ test-results/
 .codex-tmp/
 .worktrees/
 *.tsbuildinfo
+.pnpm-install*.log
 
 # Operating system and editors
 .DS_Store
