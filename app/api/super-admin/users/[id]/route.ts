@@ -9,7 +9,7 @@ export async function PATCH(
   context: { params: Promise<{ id: string }> },
 ) {
   const { id } = await context.params;
-  await requireProfile(["super_admin"]);
+  const { profile } = await requireProfile(["super_admin"]);
   const parsed = updateAppUserSchema.safeParse(
     await request.json().catch(() => null),
   );
@@ -18,7 +18,7 @@ export async function PATCH(
   }
 
   try {
-    await updateApplicationUser(id, parsed.data);
+    await updateApplicationUser(id, parsed.data, profile.id);
     return NextResponse.json({ ok: true });
   } catch (error) {
     return NextResponse.json(

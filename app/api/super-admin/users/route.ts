@@ -5,7 +5,7 @@ import { requireProfile } from "@/lib/auth/session";
 import { createAppUserSchema } from "@/lib/validation/app-user";
 
 export async function POST(request: Request) {
-  await requireProfile(["super_admin"]);
+  const { profile } = await requireProfile(["super_admin"]);
   const parsed = createAppUserSchema.safeParse(
     await request.json().catch(() => null),
   );
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const id = await createApplicationUser(parsed.data);
+    const id = await createApplicationUser(parsed.data, profile.id);
     return NextResponse.json({ ok: true, id }, { status: 201 });
   } catch (error) {
     return NextResponse.json(

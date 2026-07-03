@@ -4,6 +4,7 @@ import {
   assertSuperAdminContinuity,
   createAppUserSchema,
 } from "@/lib/validation/app-user";
+import { buildUserAuditEntry } from "@/lib/auth/admin-users";
 
 describe("createAppUserSchema", () => {
   it("normalizes usernames and accepts all three roles", () => {
@@ -52,5 +53,26 @@ describe("assertSuperAdminContinuity", () => {
         activeSuperAdminCount: 2,
       }),
     ).not.toThrow();
+  });
+});
+
+describe("buildUserAuditEntry", () => {
+  it("attributes privileged user changes to the acting Super Admin", () => {
+    expect(
+      buildUserAuditEntry({
+        actorId: "actor-id",
+        action: "user_updated",
+        userId: "target-id",
+        previousValues: { role: "timekeeper" },
+        newValues: { role: "admin" },
+      }),
+    ).toEqual({
+      actor_id: "actor-id",
+      action: "user_updated",
+      entity_type: "profiles",
+      entity_id: "target-id",
+      previous_values: { role: "timekeeper" },
+      new_values: { role: "admin" },
+    });
   });
 });

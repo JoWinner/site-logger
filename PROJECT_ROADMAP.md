@@ -4,6 +4,20 @@
 
 Build a production-ready, installable Next.js web application for recording construction-site attendance by scanning employee QR codes. The application will use Supabase for authentication and data storage and will provide separate Timekeeper, Admin, and Super Admin interfaces.
 
+## Delivery Status — 2026-07-03
+
+- [x] Next.js application and all three role interfaces implemented.
+- [x] Live `site-logger` Supabase schema, functions, RLS, and sample master data applied.
+- [x] GPS-required QR Check In/Check Out workflow implemented and transaction-tested.
+- [x] Optional Employee ID/PIN and nullable manual fields implemented.
+- [x] A–P `.xlsx` export implemented, structurally tested, and visually verified.
+- [x] PWA manifest, icons, service worker, and offline warning implemented.
+- [x] Unit, browser, type, lint, build, and live database checks passed.
+- [x] Bootstrap, Timekeeper, Admin, and Vercel handoff documentation written.
+- [ ] Project owner adds Supabase publishable/service-role keys to local and Vercel environments.
+- [ ] Project owner creates the first Super Admin with the supplied bootstrap command.
+- [ ] Project owner deploys the verified build to Vercel and runs the documented smoke test.
+
 ## Confirmed Requirements
 
 - [x] Use Next.js for the web application.
@@ -24,7 +38,7 @@ Build a production-ready, installable Next.js web application for recording cons
 
 ## Working Scan Flow
 
-This roadmap assumes the following workflow until the product design is approved:
+The approved workflow is:
 
 1. The Timekeeper signs in.
 2. The Timekeeper selects a construction site.

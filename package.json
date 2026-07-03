@@ -2,6 +2,7 @@
   "name": "site-logger-attendance",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "engines": {
     "node": ">=20.9.0"
   },
@@ -9,7 +10,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint app components lib tests proxy.ts next.config.ts vitest.config.ts eslint.config.mjs",
+    "lint": "eslint app components lib tests scripts proxy.ts next.config.ts vitest.config.ts playwright.config.ts eslint.config.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -37,6 +38,7 @@
     "eslint": "9.39.1",
     "eslint-config-next": "16.2.10",
     "jsdom": "29.1.1",
+    "sharp": "0.34.5",
     "typescript": "5.9.3",
     "vitest": "4.1.9"
   },

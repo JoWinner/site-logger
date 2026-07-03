@@ -40,6 +40,15 @@ export async function POST(
     return NextResponse.json({ error: "QR badge could not be issued." }, { status: 500 });
   }
 
+  await admin.from("audit_logs").insert({
+    actor_id: profile.id,
+    action: "qr_issued",
+    entity_type: "employee_qr_tokens",
+    entity_id: id,
+    previous_values: null,
+    new_values: { employee_id: id },
+  });
+
   return NextResponse.json({
     rawToken: token.rawToken,
     employeeName: employee.full_name,
@@ -65,5 +74,13 @@ export async function DELETE(
   if (error) {
     return NextResponse.json({ error: "QR badge could not be revoked." }, { status: 500 });
   }
+  await admin.from("audit_logs").insert({
+    actor_id: profile.id,
+    action: "qr_revoked",
+    entity_type: "employee_qr_tokens",
+    entity_id: id,
+    previous_values: { employee_id: id },
+    new_values: null,
+  });
   return NextResponse.json({ ok: true });
 }

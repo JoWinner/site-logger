@@ -9,6 +9,8 @@ export const metadata: Metadata = {
   title: "Sign in",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function LoginPage() {
   const authenticated = await getCurrentProfile();
   if (authenticated) redirect(getHomeForRole(authenticated.profile.role));
