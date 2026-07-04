@@ -53,7 +53,7 @@
 ### Task 2: Database Schema, Scan Function, and RLS
 
 **Files:**
-- Create: `supabase/migrations/202607030001_initial_attendance_schema.sql`
+- Create: `supabase/migrations/20260703010211_initial_attendance_schema.sql`
 - Create: `supabase/tests/attendance_schema.sql`
 - Create: `lib/database.types.ts`
 - Test: `supabase/tests/attendance_schema.sql`

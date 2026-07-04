@@ -1,3 +1,4 @@
+-- Remote migration version: 20260704110710.
 create or replace function public.import_employees(p_rows jsonb)
 returns jsonb
 language plpgsql

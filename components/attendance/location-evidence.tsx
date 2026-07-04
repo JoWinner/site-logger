@@ -28,8 +28,10 @@ export function LocationEvidence({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             alt={`Map showing ${label ?? coordinates}`}
+            height={300}
             loading="lazy"
             src={`/api/maps/static?latitude=${latitude}&longitude=${longitude}`}
+            width={720}
           />
         </div>
       ) : null}

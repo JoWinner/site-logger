@@ -33,11 +33,24 @@ begin
 
   if not exists (
     select 1
-    from pg_proc
-    where proname = 'record_attendance_scan'
-      and prosecdef = true
+    from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public'
+      and p.proname = 'record_attendance_scan'
+      and p.prosecdef = false
   ) then
-    raise exception 'record_attendance_scan must exist and be security definer';
+    raise exception 'public attendance scan wrapper must be security invoker';
+  end if;
+
+  if not exists (
+    select 1
+    from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'private'
+      and p.proname = 'record_attendance_scan'
+      and p.prosecdef = true
+  ) then
+    raise exception 'private attendance scan mutation must be security definer';
   end if;
 
   if exists (

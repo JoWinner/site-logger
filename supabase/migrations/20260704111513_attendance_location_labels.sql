@@ -1,3 +1,4 @@
+-- Remote migration version: 20260704111513.
 alter table public.attendance_events
   add column location_label text
     check (location_label is null or char_length(location_label) <= 500),

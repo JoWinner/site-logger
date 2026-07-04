@@ -13,6 +13,9 @@ export function AppShell({
 }) {
   return (
     <div className="app-frame">
+      <a className="skip-link" href="#main-content">
+        Skip to Main Content
+      </a>
       <OfflineBanner />
       <header className="topbar">
         <Link className="wordmark" href="/">
@@ -33,7 +36,9 @@ export function AppShell({
         <p className="sidebar__label">Control ledger</p>
         <RoleNav role={profile.role} />
       </aside>
-      <main className="workspace">{children}</main>
+      <main className="workspace" id="main-content">
+        {children}
+      </main>
     </div>
   );
 }

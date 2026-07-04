@@ -1,3 +1,4 @@
+-- Remote migration version: 20260704112708.
 create or replace function public.issue_bulk_qr_badges(
   p_employee_ids uuid[],
   p_token_hashes text[],

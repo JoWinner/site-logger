@@ -57,6 +57,16 @@ export function AttendanceLedger({
                 className="attendance-ledger__row"
                 key={row.id}
                 onClick={() => setSelected(row)}
+                onKeyDown={(event) => {
+                  if (
+                    event.target === event.currentTarget &&
+                    (event.key === "Enter" || event.key === " ")
+                  ) {
+                    event.preventDefault();
+                    setSelected(row);
+                  }
+                }}
+                tabIndex={0}
               >
                 <td data-label="Date">{row.work_date}</td>
                 <td data-label="Employee">

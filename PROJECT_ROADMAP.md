@@ -4,7 +4,7 @@
 
 Build a production-ready, installable Next.js web application for recording construction-site attendance by scanning employee QR codes. The application will use Supabase for authentication and data storage and will provide separate Timekeeper, Admin, and Super Admin interfaces.
 
-## Delivery Status — 2026-07-03
+## Delivery Status — 2026-07-04
 
 - [x] Next.js application and all three role interfaces implemented.
 - [x] Live `site-logger` Supabase schema, functions, RLS, and sample master data applied.
@@ -14,7 +14,14 @@ Build a production-ready, installable Next.js web application for recording cons
 - [x] PWA manifest, icons, service worker, and offline warning implemented.
 - [x] Unit, browser, type, lint, build, and live database checks passed.
 - [x] Bootstrap, Timekeeper, Admin, and Vercel handoff documentation written.
-- [ ] Project owner adds Supabase publishable/service-role keys to local and Vercel environments.
+- [x] Responsive employee, site, and attendance ledgers verified at phone, tablet, and desktop widths.
+- [x] CSV/XLSX employee and site import preview/commit workflows implemented.
+- [x] Mapbox reverse geocoding and static attendance map evidence implemented.
+- [x] Attendance quick preview, manual review, corrections, and full-history navigation implemented.
+- [x] Super Admin bulk QR issue/print workflow implemented for up to 100 employees.
+- [x] Live database advisor hardening applied, including private mutation functions and foreign-key indexes.
+- [ ] Project owner adds Supabase and Mapbox production secrets to Vercel.
+- [ ] Project owner enables Supabase leaked-password protection when the project plan supports it.
 - [ ] Project owner creates the first Super Admin with the supplied bootstrap command.
 - [ ] Project owner deploys the verified build to Vercel and runs the documented smoke test.
 

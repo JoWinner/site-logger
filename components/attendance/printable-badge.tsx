@@ -17,7 +17,12 @@ export function PrintableBadge({
         {qrDataUrl ? (
           // The generated data URL never leaves the current browser session.
           // eslint-disable-next-line @next/next/no-img-element
-          <img alt={`Attendance QR for ${employeeName}`} src={qrDataUrl} />
+          <img
+            alt={`Attendance QR for ${employeeName}`}
+            height={600}
+            src={qrDataUrl}
+            width={600}
+          />
         ) : (
           <span>QR not issued in this session</span>
         )}
