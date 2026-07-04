@@ -260,6 +260,7 @@ textarea {
 }
 
 .field span,
+.field > label,
 .check-field span {
   color: var(--forest-dark);
   font-family: var(--font-display), sans-serif;
@@ -286,6 +287,47 @@ textarea {
 .field textarea:focus {
   border-color: var(--signal);
   outline: 3px solid rgb(239 106 46 / 18%);
+}
+
+.password-input {
+  position: relative;
+}
+
+.password-input input {
+  padding-right: 56px;
+}
+
+.password-input__toggle {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  display: grid;
+  width: 46px;
+  height: 46px;
+  border: 0;
+  place-items: center;
+  color: var(--forest);
+  background: transparent;
+  cursor: pointer;
+}
+
+.password-input__toggle:hover {
+  color: var(--signal);
+  background: rgb(239 106 46 / 8%);
+}
+
+.password-input__toggle:focus-visible {
+  outline: 3px solid rgb(239 106 46 / 28%);
+  outline-offset: -3px;
+}
+
+.password-input__toggle svg {
+  width: 21px;
+  height: 21px;
+  stroke: currentcolor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .check-field {
@@ -454,6 +496,17 @@ textarea {
 .role-nav a:hover {
   border-left-color: var(--signal);
   background: rgb(255 255 255 / 6%);
+}
+
+.role-nav__link--active {
+  border-left-color: var(--signal);
+  color: var(--white);
+  background: rgb(255 255 255 / 10%);
+  box-shadow: inset 3px 0 0 rgb(239 106 46 / 18%);
+}
+
+.role-nav__link--active span {
+  color: #c9dbd5;
 }
 
 .role-nav span {

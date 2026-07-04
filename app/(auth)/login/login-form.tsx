@@ -2,6 +2,8 @@
 
 import { useState, type FormEvent } from "react";
 
+import { PasswordField } from "@/components/forms/password-field";
+
 export function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -47,15 +49,12 @@ export function LoginForm() {
           required
         />
       </label>
-      <label className="field">
-        <span>Password</span>
-        <input
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          required
-        />
-      </label>
+      <PasswordField
+        autoComplete="current-password"
+        label="Password"
+        name="password"
+        required
+      />
       {error ? (
         <p className="form-error" role="alert">
           {error}
