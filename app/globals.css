@@ -739,6 +739,76 @@ textarea {
   padding: 22px;
 }
 
+.import-station,
+.import-preview {
+  display: grid;
+  gap: 18px;
+}
+
+.import-form {
+  display: grid;
+  max-width: 720px;
+  gap: 14px;
+}
+
+.import-summary {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.import-summary span {
+  display: grid;
+  min-height: 76px;
+  align-content: center;
+  padding: 12px;
+  border: 1px solid #d6d1c5;
+  background: var(--white);
+  text-align: center;
+}
+
+.import-summary strong {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.7rem;
+}
+
+.import-disposition {
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  padding-inline: 9px;
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.import-disposition--new {
+  color: #165f3a;
+  background: #d8efe1;
+}
+
+.import-disposition--update {
+  color: #334e75;
+  background: #d8e4f4;
+}
+
+.import-disposition--warning {
+  color: #76570a;
+  background: #f6e8b5;
+}
+
+.import-disposition--error {
+  color: #8a2415;
+  background: #f3d3cb;
+}
+
+.import-preview__table th:first-child,
+.import-preview__table td:first-child {
+  width: 70px;
+}
+
 .icon-button {
   display: grid;
   width: 48px;
@@ -1061,6 +1131,10 @@ textarea {
 
   .row-actions {
     display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .import-summary {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 

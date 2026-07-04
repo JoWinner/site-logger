@@ -145,6 +145,18 @@ export type Database = {
         };
         Returns: AttendanceSessionRow;
       };
+      import_employees: {
+        Args: {
+          p_rows: Json;
+        };
+        Returns: Json;
+      };
+      import_sites: {
+        Args: {
+          p_rows: Json;
+        };
+        Returns: Json;
+      };
     };
     Enums: {
       app_role: AppRole;

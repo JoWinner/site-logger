@@ -1,5 +1,6 @@
 import { SiteForm } from "@/app/(protected)/admin/sites/site-form";
 import { SiteLedger } from "@/components/admin/site-ledger";
+import { MasterDataImport } from "@/components/imports/master-data-import";
 import { requireProfile } from "@/lib/auth/session";
 import type { SiteRow } from "@/lib/database.types";
 
@@ -21,6 +22,13 @@ export default async function SitesPage() {
         <article className="panel master-data-create">
           <h2>Add site</h2>
           <SiteForm />
+        </article>
+        <article className="panel">
+          <div className="panel__header">
+            <h2>Import sites</h2>
+            <span>CSV / XLSX</span>
+          </div>
+          <MasterDataImport entity="sites" />
         </article>
         <article className="panel">
           <div className="panel__header">

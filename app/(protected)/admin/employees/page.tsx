@@ -1,5 +1,6 @@
 import { EmployeeForm } from "@/app/(protected)/admin/employees/employee-form";
 import { EmployeeLedger } from "@/components/admin/employee-ledger";
+import { MasterDataImport } from "@/components/imports/master-data-import";
 import { requireProfile } from "@/lib/auth/session";
 import type { EmployeeRow } from "@/lib/database.types";
 
@@ -27,6 +28,13 @@ export default async function EmployeesPage() {
         <article className="panel master-data-create">
           <h2>Add employee</h2>
           <EmployeeForm />
+        </article>
+        <article className="panel">
+          <div className="panel__header">
+            <h2>Import employees</h2>
+            <span>CSV / XLSX</span>
+          </div>
+          <MasterDataImport entity="employees" />
         </article>
         <article className="panel">
           <div className="panel__header">
