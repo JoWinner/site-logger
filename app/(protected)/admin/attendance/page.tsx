@@ -1,31 +1,56 @@
 import Link from "next/link";
 
+import { AttendanceLedger } from "@/components/attendance/attendance-ledger";
+import { loadAttendanceLedger } from "@/lib/attendance/ledger";
 import { requireProfile } from "@/lib/auth/session";
-import type { AttendanceSessionRow } from "@/lib/database.types";
 
-export default async function AttendancePage() {
-  const { supabase } = await requireProfile(["admin", "super_admin"]);
-  const { data } = await supabase.from("attendance_sessions").select("*").order("check_in_at", { ascending: false }).limit(250);
-  const sessions = (data ?? []) as unknown as AttendanceSessionRow[];
+export default async function AttendancePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const { page: pageValue } = await searchParams;
+  const page = Math.max(1, Number.parseInt(pageValue ?? "1", 10) || 1);
+  const pageSize = 25;
+  const { profile, supabase } = await requireProfile(["admin", "super_admin"]);
+  const sessions = await loadAttendanceLedger(supabase, {
+    limit: pageSize,
+    offset: (page - 1) * pageSize,
+  });
 
   return (
     <section>
       <header className="page-header">
-        <div><p className="eyebrow">Evidence · Review</p><h1>Attendance ledger</h1><p>Each row traces back to immutable Check In and Check Out scan evidence.</p></div>
-        <a className="button button--signal" href="/api/exports/attendance.xlsx">Export .xlsx</a>
+        <div>
+          <p className="eyebrow">Evidence · Review</p>
+          <h1>Attendance ledger</h1>
+          <p>
+            Tap any record for GPS evidence, manual review, and corrections.
+          </p>
+        </div>
+        <a className="button button--signal" href="/api/exports/attendance.xlsx">
+          Export .xlsx
+        </a>
       </header>
       <article className="panel">
-        <div className="attendance-table">
-          <div className="attendance-table__head">
-            <span>Date</span><span>Employee</span><span>Site</span><span>Check in</span><span>Check out</span><span>Hours</span><span>Status</span>
-          </div>
-          {sessions.map((session) => (
-            <Link className="attendance-table__row attendance-table__row--admin" href={`/attendance/${session.id}`} key={session.id}>
-              <time>{session.work_date}</time><strong>{session.employee_name_snapshot}</strong><span>{session.site_name_snapshot}</span><time>{new Date(session.check_in_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</time><time>{session.check_out_at ? new Date(session.check_out_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}</time><span>{session.worked_minutes === null ? "—" : (session.worked_minutes / 60).toFixed(2)}</span><span className={`ledger-status ledger-status--${session.status}`}>{session.status}</span>
+        <AttendanceLedger
+          mapAvailable={Boolean(process.env.MAPBOX_ACCESS_TOKEN)}
+          role={profile.role}
+          rows={sessions}
+        />
+        <nav className="pagination" aria-label="Attendance pages">
+          {page > 1 ? (
+            <Link className="button button--compact" href={`?page=${page - 1}`}>
+              Previous
             </Link>
-          ))}
-          {sessions.length === 0 ? <p className="empty-copy">No attendance sessions yet.</p> : null}
-        </div>
+          ) : <span />}
+          <span>Page {page}</span>
+          {sessions.length === pageSize ? (
+            <Link className="button button--compact" href={`?page=${page + 1}`}>
+              Next
+            </Link>
+          ) : <span />}
+        </nav>
       </article>
     </section>
   );
