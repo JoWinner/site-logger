@@ -175,6 +175,14 @@ export type Database = {
         };
         Returns: AttendanceSessionRow;
       };
+      issue_bulk_qr_badges: {
+        Args: {
+          p_employee_ids: string[];
+          p_token_hashes: string[];
+          p_actor_id: string;
+        };
+        Returns: Json;
+      };
     };
     Enums: {
       app_role: AppRole;

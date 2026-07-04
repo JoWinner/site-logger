@@ -991,6 +991,70 @@ textarea {
   gap: 12px;
 }
 
+.bulk-badge-desk,
+.bulk-badge-controls,
+.bulk-badge-results {
+  display: grid;
+  gap: 22px;
+}
+
+.bulk-badge-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.bulk-badge-toolbar strong {
+  margin-inline: auto 8px;
+}
+
+.bulk-badge-list {
+  display: grid;
+  gap: 7px;
+}
+
+.bulk-badge-row {
+  display: grid;
+  min-height: 54px;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px;
+  border: 1px solid #d6d1c5;
+  background: var(--white);
+  cursor: pointer;
+  grid-template-columns: 24px minmax(180px, 1.4fr) 0.7fr 0.8fr 0.8fr;
+}
+
+.bulk-badge-row:has(input:checked) {
+  border-color: var(--signal);
+  background: rgb(239 106 46 / 7%);
+}
+
+.bulk-badge-row input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--signal);
+}
+
+.bulk-badge-row span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+}
+
+.bulk-badge-grid {
+  display: grid;
+  gap: 28px;
+  grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
+}
+
+.bulk-badge-grid .employee-badge {
+  width: 100%;
+  max-width: 480px;
+  justify-self: center;
+}
+
 .offline-banner {
   position: fixed;
   z-index: 100;
@@ -1154,6 +1218,26 @@ textarea {
   .record-dialog__surface {
     height: 100dvh;
   }
+
+  .bulk-badge-toolbar {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .bulk-badge-toolbar strong {
+    margin: 0;
+    grid-column: 1 / -1;
+  }
+
+  .bulk-badge-row {
+    min-height: 0;
+    align-items: start;
+    grid-template-columns: 24px minmax(0, 1fr);
+  }
+
+  .bulk-badge-row > span {
+    grid-column: 2;
+  }
 }
 
 @media print {
@@ -1175,6 +1259,31 @@ textarea {
     width: 90mm;
     box-shadow: none;
     break-inside: avoid;
+  }
+
+  .bulk-badge-panel {
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .bulk-badge-grid {
+    display: grid;
+    gap: 8mm;
+    grid-template-columns: repeat(2, 90mm);
+  }
+
+  .bulk-badge-grid .employee-badge {
+    width: 90mm;
+    max-width: none;
+    margin: 0;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .bulk-badge-grid .employee-badge__qr {
+    min-height: 72mm;
+    padding: 8mm;
   }
 }
 

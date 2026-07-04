@@ -3,6 +3,9 @@
 import QRCode from "qrcode";
 import { useState } from "react";
 
+import { PrintableBadge } from "@/components/attendance/printable-badge";
+import { badgePrintTitle } from "@/lib/qr/filenames";
+
 export function EmployeeBadge({
   employeeId,
   employeeName,
@@ -39,30 +42,25 @@ export function EmployeeBadge({
     setPending(false);
   }
 
+  function printBadge() {
+    const previousTitle = document.title;
+    document.title = badgePrintTitle(employeeName);
+    window.print();
+    document.title = previousTitle;
+  }
+
   return (
     <div className="badge-station">
-      <article className="employee-badge">
-        <header>
-          <span>Site Logger</span>
-          <strong>Employee attendance</strong>
-        </header>
-        <div className="employee-badge__qr">
-          {qrDataUrl ? (
-            // The generated data URL never leaves the current browser session.
-            // eslint-disable-next-line @next/next/no-img-element
-            <img alt={`Attendance QR for ${employeeName}`} src={qrDataUrl} />
-          ) : (
-            <span>QR not issued in this session</span>
-          )}
-        </div>
-        <h2>{employeeName}</h2>
-        <p>{employeeIdPin ?? "Employee ID / PIN not assigned"}</p>
-      </article>
+      <PrintableBadge
+        employeeIdPin={employeeIdPin}
+        employeeName={employeeName}
+        qrDataUrl={qrDataUrl}
+      />
       <div className="badge-actions">
         <button className="button button--signal" disabled={pending} onClick={issue} type="button">
           {pending ? "Issuing…" : qrDataUrl ? "Reissue badge" : "Issue badge"}
         </button>
-        <button className="button" disabled={!qrDataUrl} onClick={() => window.print()} type="button">
+        <button className="button" disabled={!qrDataUrl} onClick={printBadge} type="button">
           Print badge
         </button>
         {error ? <p className="form-error">{error}</p> : null}

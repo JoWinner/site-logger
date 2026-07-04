@@ -27,6 +27,7 @@ const NAVIGATION: Record<AppRole, NavigationItem[]> = {
     { href: "/admin/attendance", label: "Attendance", eyebrow: "Review" },
     { href: "/admin/employees", label: "Employees", eyebrow: "People" },
     { href: "/admin/sites", label: "Sites", eyebrow: "Places" },
+    { href: "/super-admin/badges", label: "Bulk badges", eyebrow: "QR desk" },
     { href: "/super-admin/users", label: "Users", eyebrow: "Access" },
   ],
 };
