@@ -19,7 +19,8 @@ export function SiteForm({ site }: { site?: ExistingSite }) {
     event.preventDefault();
     setPending(true);
     setMessage(null);
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     const response = await fetch(
       site ? `/api/admin/sites/${site.id}` : "/api/admin/sites",
       {
@@ -38,7 +39,7 @@ export function SiteForm({ site }: { site?: ExistingSite }) {
       setPending(false);
       return;
     }
-    if (!site) event.currentTarget.reset();
+    if (!site) formElement.reset();
     setMessage("Site saved.");
     setPending(false);
     router.refresh();

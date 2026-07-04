@@ -620,6 +620,150 @@ textarea {
   grid-template-columns: minmax(260px, 0.8fr) minmax(460px, 1.7fr);
 }
 
+.master-data-stack {
+  display: grid;
+  gap: 22px;
+}
+
+.master-data-create {
+  max-width: 760px;
+}
+
+.responsive-table-wrap {
+  width: 100%;
+}
+
+.responsive-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.responsive-table caption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.responsive-table th,
+.responsive-table td {
+  padding: 13px 12px;
+  border-bottom: 1px solid #d6d1c5;
+  overflow-wrap: anywhere;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.responsive-table th {
+  color: var(--muted);
+  background: #eee8dc;
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.responsive-table tbody tr:hover {
+  background: rgb(239 106 46 / 5%);
+}
+
+.responsive-table__actions {
+  width: 210px;
+}
+
+.record-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.button--compact {
+  min-height: 40px;
+  padding-inline: 12px;
+  font-size: 0.78rem;
+}
+
+.record-dialog {
+  width: min(760px, calc(100% - 32px));
+  max-height: min(86vh, 820px);
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  background: transparent;
+  box-shadow: var(--shadow);
+}
+
+.record-dialog::backdrop {
+  background: rgb(8 25 20 / 62%);
+}
+
+.record-dialog__surface {
+  max-height: inherit;
+  overflow: auto;
+  background: var(--paper);
+}
+
+.record-dialog__header {
+  position: sticky;
+  z-index: 2;
+  top: 0;
+  display: flex;
+  min-height: 72px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 12px 18px;
+  color: var(--white);
+  background: var(--forest-dark);
+}
+
+.record-dialog__header h2 {
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  text-transform: uppercase;
+}
+
+.record-dialog__content {
+  padding: 22px;
+}
+
+.icon-button {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  border: 1px solid rgb(255 255 255 / 35%);
+  place-items: center;
+  color: var(--white);
+  background: transparent;
+  cursor: pointer;
+}
+
+.icon-button:hover {
+  color: var(--signal);
+  border-color: var(--signal);
+}
+
+.icon-button svg {
+  width: 22px;
+  height: 22px;
+  stroke: currentcolor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
 .panel {
   padding: 24px;
   border: 1px solid var(--line);
@@ -868,6 +1012,73 @@ textarea {
 
   .record-row summary span:not(.status-pip) {
     display: none;
+  }
+
+  .responsive-table,
+  .responsive-table tbody,
+  .responsive-table tr,
+  .responsive-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .responsive-table thead {
+    display: none;
+  }
+
+  .responsive-table tbody {
+    display: grid;
+    gap: 12px;
+  }
+
+  .responsive-table tr {
+    border: 1px solid #d6d1c5;
+    background: var(--white);
+  }
+
+  .responsive-table td {
+    display: grid;
+    min-height: 48px;
+    gap: 12px;
+    align-items: start;
+    padding: 11px 12px;
+    grid-template-columns: minmax(92px, 0.7fr) minmax(0, 1.3fr);
+  }
+
+  .responsive-table td::before {
+    content: attr(data-label);
+    color: var(--muted);
+    font-family: var(--font-display), sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+  }
+
+  .responsive-table__actions {
+    width: 100%;
+  }
+
+  .row-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .button--compact {
+    min-height: 48px;
+  }
+
+  .record-dialog {
+    width: 100%;
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    border: 0;
+  }
+
+  .record-dialog__surface {
+    height: 100dvh;
   }
 }
 

@@ -27,7 +27,8 @@ export function EmployeeForm({
     event.preventDefault();
     setPending(true);
     setMessage(null);
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
 
     const response = await fetch(
       employee ? `/api/admin/employees/${employee.id}` : "/api/admin/employees",
@@ -51,7 +52,7 @@ export function EmployeeForm({
       return;
     }
 
-    if (!employee) event.currentTarget.reset();
+    if (!employee) formElement.reset();
     setMessage("Employee saved.");
     setPending(false);
     router.refresh();
