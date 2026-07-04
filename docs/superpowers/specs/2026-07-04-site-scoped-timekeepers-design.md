@@ -87,6 +87,10 @@ writing the profile.
 User audit entries include the previous and new site assignment alongside the
 role and active status.
 
+An active site cannot be deactivated while active Timekeepers are assigned to
+it. A Super Admin must first reassign or deactivate those Timekeepers. This
+keeps every active Timekeeper attached to an active operating site.
+
 ## Timekeeper Scan Flow
 
 1. The Timekeeper signs in.
@@ -135,6 +139,12 @@ retain organization-wide attendance access.
 The Timekeeper table continues to show complete sessions. When different
 Timekeepers at the same site record Check In and Check Out, each recorder can
 see that session because each participated in it.
+
+Reassigning a Timekeeper changes their table to the new site's records.
+Attendance they previously recorded at another site remains preserved and
+visible to Admins and Super Admins, but no longer appears in that Timekeeper's
+operational table. This prevents historical records from different sites being
+mixed in the current site workflow.
 
 Manual fields remain editable by a Timekeeper only on sessions where they
 recorded Check In or Check Out. Admins and Super Admins retain existing access.
@@ -199,6 +209,7 @@ Automated tests cover:
 - user validation requiring a site only for Timekeepers
 - create/update audit entries containing site assignments
 - Super Admin forms showing and clearing the site selector by role
+- prevention of site deactivation while active Timekeepers are assigned
 - Timekeeper page loading only the assigned site
 - scan requests omitting client-selected site IDs
 - database scan rejection without an assignment
