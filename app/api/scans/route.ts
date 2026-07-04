@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { validateGpsEvidence } from "@/lib/attendance/gps";
 import { getScanErrorMessage } from "@/lib/attendance/scan-errors";
 import { requireProfile } from "@/lib/auth/session";
+import { reverseGeocode } from "@/lib/location/mapbox";
 import { scanRequestSchema } from "@/lib/validation/scan";
 
 interface ScanRpcResult {
@@ -59,6 +60,11 @@ export async function POST(request: Request) {
     );
   }
 
+  const location = await reverseGeocode(
+    parsed.data.latitude,
+    parsed.data.longitude,
+  );
+
   const { data, error } = await supabase.rpc(
     "record_attendance_scan",
     {
@@ -92,10 +98,30 @@ export async function POST(request: Request) {
     );
   }
 
+  let locationStored = false;
+  if (
+    process.env.MAPBOX_GEOCODING_MODE === "permanent" &&
+    location &&
+    result.event_id
+  ) {
+    const { error: locationError } = await supabase.rpc(
+      "resolve_attendance_location",
+      {
+        p_event_id: result.event_id,
+        p_location_label: location.label,
+        p_location_feature_id: location.featureId,
+        p_resolved_at: location.resolvedAt,
+      } as never,
+    );
+    locationStored = !locationError;
+  }
+
   return NextResponse.json({
     ...result,
     employeeName: result.employee_name,
     siteName: result.site_name,
     sessionId: result.session_id,
+    locationLabel: location?.label ?? null,
+    locationStored,
   });
 }

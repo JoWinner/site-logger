@@ -9,6 +9,7 @@ export type Json =
 export type AppRole = "timekeeper" | "admin" | "super_admin";
 export type AttendanceAction = "check_in" | "check_out";
 export type AttendanceStatus = "open" | "complete" | "incomplete" | "corrected";
+export type LocationResolutionStatus = "unresolved" | "resolved";
 export type PayrollStatus = "pending" | "approved" | "on_hold" | "paid";
 
 type RowTable<Row, Insert, Update = Partial<Insert>> = {
@@ -71,6 +72,14 @@ export interface AttendanceSessionRow {
   check_out_latitude: number | null;
   check_out_longitude: number | null;
   check_out_accuracy_metres: number | null;
+  check_in_location_label: string | null;
+  check_in_location_feature_id: string | null;
+  check_in_location_resolution_status: LocationResolutionStatus;
+  check_in_location_resolved_at: string | null;
+  check_out_location_label: string | null;
+  check_out_location_feature_id: string | null;
+  check_out_location_resolution_status: LocationResolutionStatus | null;
+  check_out_location_resolved_at: string | null;
   check_in_by: string;
   check_out_by: string | null;
   worked_minutes: number | null;
@@ -156,6 +165,15 @@ export type Database = {
           p_rows: Json;
         };
         Returns: Json;
+      };
+      resolve_attendance_location: {
+        Args: {
+          p_event_id: string;
+          p_location_label: string;
+          p_location_feature_id: string | null;
+          p_resolved_at: string;
+        };
+        Returns: AttendanceSessionRow;
       };
     };
     Enums: {
