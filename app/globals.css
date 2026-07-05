@@ -315,6 +315,12 @@ textarea {
   outline: 3px solid rgb(239 106 46 / 18%);
 }
 
+.field-hint {
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
 .password-input {
   position: relative;
 }

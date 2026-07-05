@@ -53,6 +53,12 @@ describe("master data forms", () => {
     );
     render(<SiteForm />);
 
+    expect(
+      screen.getByText(
+        "Each site needs a different code, for example ATLAS or POKUASE.",
+      ),
+    ).toBeInTheDocument();
+
     fireEvent.change(screen.getByLabelText("Permanent site code *"), {
       target: { value: "SITE-01" },
     });

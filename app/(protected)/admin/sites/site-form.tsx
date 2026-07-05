@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
 
 interface ExistingSite {
   id: string;
@@ -12,6 +12,8 @@ interface ExistingSite {
 
 export function SiteForm({ site }: { site?: ExistingSite }) {
   const router = useRouter();
+  const siteCodeId = useId();
+  const siteCodeHintId = `${siteCodeId}-hint`;
   const [message, setMessage] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -47,10 +49,19 @@ export function SiteForm({ site }: { site?: ExistingSite }) {
 
   return (
     <form className={site ? "record-form record-form--compact" : "record-form"} onSubmit={submit}>
-      <label className="field">
-        <span>Permanent site code *</span>
-        <input defaultValue={site?.siteCode} name="siteCode" required />
-      </label>
+      <div className="field">
+        <label htmlFor={siteCodeId}>Permanent site code *</label>
+        <input
+          aria-describedby={siteCodeHintId}
+          defaultValue={site?.siteCode}
+          id={siteCodeId}
+          name="siteCode"
+          required
+        />
+        <small className="field-hint" id={siteCodeHintId}>
+          Each site needs a different code, for example ATLAS or POKUASE.
+        </small>
+      </div>
       <label className="field">
         <span>Site name *</span>
         <input defaultValue={site?.name} name="name" required />

@@ -18,7 +18,12 @@ export async function POST(request: Request) {
   } as never);
   if (error) {
     return NextResponse.json(
-      { error: error.code === "23505" ? "That site code already exists." : "Site could not be saved." },
+      {
+        error:
+          error.code === "23505"
+            ? `Site code ${parsed.data.siteCode} is already in use. Enter a different code for each site.`
+            : "Site could not be saved.",
+      },
       { status: 409 },
     );
   }
