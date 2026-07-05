@@ -1,5 +1,5 @@
 import { ScanConsole } from "@/app/(protected)/timekeeper/scan-console";
-import { AttendanceLedger } from "@/components/attendance/attendance-ledger";
+import { RecentScansTable } from "@/components/attendance/recent-scans-table";
 import { loadAttendanceLedger } from "@/lib/attendance/ledger";
 import { requireProfile } from "@/lib/auth/session";
 import type { SiteRow } from "@/lib/database.types";
@@ -38,7 +38,7 @@ export default async function TimekeeperPage() {
           <h2>Recent scans</h2>
           <span>Your visible records</span>
         </div>
-        <AttendanceLedger
+        <RecentScansTable
           role={profile.role}
           rows={sessions}
         />

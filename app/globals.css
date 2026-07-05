@@ -1677,6 +1677,97 @@ textarea {
   margin-top: 24px;
 }
 
+.recent-scans-table-wrap {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+
+.recent-scans-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 0.84rem;
+}
+
+.recent-scans-table caption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.recent-scans-table th,
+.recent-scans-table td {
+  padding: 11px 9px;
+  border-bottom: 1px solid #d6d1c5;
+  overflow-wrap: anywhere;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.recent-scans-table th {
+  color: var(--muted);
+  background: #eee8dc;
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.recent-scans-table th:nth-child(1) {
+  width: 42%;
+}
+
+.recent-scans-table th:nth-child(2) {
+  width: 24%;
+}
+
+.recent-scans-table th:nth-child(3) {
+  width: 22%;
+}
+
+.recent-scans-table th:nth-child(4) {
+  width: 12%;
+}
+
+.recent-scans-table tbody tr {
+  cursor: pointer;
+  background: var(--white);
+}
+
+.recent-scans-table tbody tr:hover,
+.recent-scans-table tbody tr:focus-within {
+  background: #f6efe1;
+}
+
+.recent-scans-table td strong,
+.recent-scans-table td time {
+  display: block;
+}
+
+.recent-scans-table td time {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.recent-scans-table__time {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.recent-scans-table__view {
+  min-height: 38px;
+  padding-inline: 9px;
+  font-size: 0.72rem;
+}
+
 .attendance-ledger-wrap {
   overflow: hidden;
 }
@@ -1925,5 +2016,47 @@ textarea {
 
   .site-ledger-group__body {
     padding: 8px;
+  }
+
+  .recent-panel {
+    padding-inline: 10px;
+  }
+
+  .recent-scans-table {
+    font-size: 0.76rem;
+  }
+
+  .recent-scans-table th,
+  .recent-scans-table td {
+    padding: 9px 5px;
+  }
+
+  .recent-scans-table th:nth-child(1) {
+    width: 40%;
+  }
+
+  .recent-scans-table th:nth-child(2) {
+    width: 25%;
+  }
+
+  .recent-scans-table th:nth-child(3) {
+    width: 22%;
+  }
+
+  .recent-scans-table th:nth-child(4) {
+    width: 13%;
+  }
+
+  .recent-scans-table .ledger-status {
+    min-height: 24px;
+    padding-inline: 5px;
+    font-size: 0.62rem;
+  }
+
+  .recent-scans-table__view {
+    width: 100%;
+    min-height: 34px;
+    padding-inline: 3px;
+    font-size: 0.64rem;
   }
 }

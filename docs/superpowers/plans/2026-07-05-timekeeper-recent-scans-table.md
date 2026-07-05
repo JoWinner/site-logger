@@ -30,7 +30,7 @@
 - Consumes: `AttendanceLedgerRow[]` and `AppRole`
 - Produces: `RecentScansTable({ rows, role })`
 
-- [ ] **Step 1: Write the failing component test**
+- [x] **Step 1: Write the failing component test**
 
 Render one attendance row and assert the table caption, four headers, employee
 date, combined time cell, and preview interaction:
@@ -51,7 +51,7 @@ expect(
 ).toBeInTheDocument();
 ```
 
-- [ ] **Step 2: Run the test and verify RED**
+- [x] **Step 2: Run the test and verify RED**
 
 Run:
 
@@ -61,7 +61,7 @@ pnpm.cmd exec vitest run tests/unit/components/recent-scans-table.test.tsx
 
 Expected: FAIL because `RecentScansTable` does not exist.
 
-- [ ] **Step 3: Implement the component**
+- [x] **Step 3: Implement the component**
 
 Create a client component that renders:
 
@@ -84,7 +84,7 @@ Check In and Check Out values. Rows support click, Enter, and Space. The View
 button stops propagation and selects the same row for
 `AttendancePreviewDialog`.
 
-- [ ] **Step 4: Switch the Timekeeper page**
+- [x] **Step 4: Switch the Timekeeper page**
 
 Replace the Recent Scans `AttendanceLedger` import and rendering with:
 
@@ -92,14 +92,14 @@ Replace the Recent Scans `AttendanceLedger` import and rendering with:
 <RecentScansTable role={profile.role} rows={sessions} />
 ```
 
-- [ ] **Step 5: Add compact always-table CSS**
+- [x] **Step 5: Add compact always-table CSS**
 
 Add dedicated styles for fixed column proportions, compact cell padding,
 wrapped employee names, and an abbreviated mobile View button. Do not attach
 the shared `.responsive-table` class, so the existing card conversion cannot
 affect this table.
 
-- [ ] **Step 6: Verify GREEN**
+- [x] **Step 6: Verify GREEN**
 
 Run:
 
@@ -111,7 +111,7 @@ pnpm.cmd lint
 
 Expected: all commands exit 0.
 
-- [ ] **Step 7: Run responsive authenticated QA**
+- [x] **Step 7: Run responsive authenticated QA**
 
 Open `/timekeeper` at 390, 820, and 1440 pixels. Assert:
 
@@ -120,7 +120,7 @@ document.querySelector(".recent-scans-table") !== null
 document.documentElement.scrollWidth <= window.innerWidth
 ```
 
-- [ ] **Step 8: Commit and push**
+- [x] **Step 8: Commit and push**
 
 ```powershell
 git add app components tests docs
