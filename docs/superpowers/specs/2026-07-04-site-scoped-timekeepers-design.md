@@ -5,8 +5,9 @@
 Assign every Timekeeper to exactly one construction site, prevent Timekeepers
 from recording attendance for other sites, and show each Timekeeper only the
 attendance sessions they personally recorded at their assigned site. Remove
-the Mapbox integration while preserving raw GPS coordinates and accuracy as
-attendance evidence.
+the Mapbox integration while preserving raw GPS evidence. Organize employees
+and attendance by site, add reusable search/sort/filter controls, and provide
+date-ranged CSV/XLSX exports for Admins and Timekeepers.
 
 ## Confirmed Decisions
 
@@ -23,6 +24,19 @@ attendance evidence.
 - GPS latitude, longitude, capture time, and accuracy remain required.
 - Mapbox place names, feature identifiers, static maps, API calls, environment
   variables, and storage are removed.
+- Employees have one nullable, editable **Current Site** used only for
+  organization and reporting.
+- An employee's Current Site never restricts where their QR badge can be
+  scanned.
+- Employee `crew` data is removed from the database, forms, imports, and UI.
+- Employee and attendance ledgers are grouped into separate site sections.
+- Every multi-record operational table has search, sorting, and relevant
+  filters.
+- Admins and Super Admins may export one or multiple selected sites for a
+  required date range.
+- Timekeepers may export only records they personally recorded at their
+  assigned site.
+- Overtime Check remains available and exported.
 
 ## Architecture
 
@@ -43,6 +57,14 @@ Authorization is enforced in three layers:
 
 The browser filter is therefore a usability optimization, not the security
 boundary.
+
+Employee Current Site is intentionally not part of scan authorization.
+Attendance always records the site of the Timekeeper who captured the event,
+regardless of the employee's organizational Current Site.
+
+Table state is represented by URL query parameters. Search, sort, filter,
+pagination, selected sites, and date ranges therefore survive refreshes and
+operate on the full server query instead of only the rows currently rendered.
 
 ## Profile Data Model
 
@@ -66,6 +88,85 @@ The migration backfills the existing active Timekeeper whose username is
 `frank` to the site whose code is `ATLAS` before enabling the constraint. The
 migration fails instead of silently assigning an incorrect site if Frank or
 Atlas exists but the relationship cannot be established.
+
+## Employee Current Site
+
+Add the nullable column:
+
+```sql
+current_site_id uuid references public.sites(id) on delete set null
+```
+
+Add an index on `employees(current_site_id)`. Remove the `crew` column in the
+same forward migration after application code and import contracts no longer
+depend on it.
+
+Current Site behavior:
+
+- Admins and Super Admins select a Current Site when creating or editing an
+  employee.
+- Current Site may be left blank, producing the **Unassigned** employee group.
+- Moving an employee means editing this value; no historical assignment table
+  is created.
+- Changing Current Site does not rewrite previous attendance sessions.
+- Scan functions do not read or enforce `current_site_id`.
+- CSV/XLSX employee imports accept Site Code or Site Name and no longer accept
+  Crew.
+- An unknown imported site is a row-level validation error.
+
+Existing employee backfill:
+
+| Employee | Current Site |
+|---|---|
+| Andre Cole | Atlas |
+| Luis Rivera | Atlas |
+| Daniel Reyes | Unassigned |
+| Marcus Hill | Unassigned |
+
+## Shared Ledger Controls
+
+Every multi-record operational ledger or selection table receives a consistent
+toolbar with:
+
+- text search
+- an explicit sort field and ascending/descending direction
+- filters relevant to that dataset
+- a clear/reset action
+- result count and empty state
+
+The covered surfaces are:
+
+- employee ledgers
+- site ledger
+- attendance ledgers
+- Super Admin user/access ledger
+- bulk QR employee selection
+- import preview tables
+
+Relevant filters include:
+
+| Surface | Search | Filters | Sorts |
+|---|---|---|---|
+| Employees | name, Employee ID/PIN, trade | Current Site, active state | name, site, trade, updated date |
+| Sites | name, site code | active state | name, code, updated date |
+| Attendance | employee, Timekeeper | site, date range, status, overtime state | date, employee, site, Check In, hours |
+| Users | display name, username | role, assigned site, active state | display name, role, site, updated date |
+| Bulk QR | name, Employee ID/PIN, trade | Current Site, active state | name, site, trade |
+| Import preview | row values and validation messages | new, update, warning, error | row number, disposition, name/code |
+
+Desktop tables use sortable headers or the toolbar sort control. Mobile keeps
+the existing card transformation and exposes sorting through the toolbar so no
+horizontal table interaction is required.
+
+## Site-Grouped Employee Ledgers
+
+The Employee page renders one collapsible ledger section for every site
+represented by the current filtered result, plus an **Unassigned** section.
+Each section shows the site name and matching employee count. Search, filter,
+and sort apply before grouping.
+
+Employee rows contain Status, Employee, Employee ID/PIN, Current Site, Trade /
+Role, Updated, and Actions. Crew is absent.
 
 ## Super Admin User Management
 
@@ -108,6 +209,32 @@ If the Timekeeper has no assignment, has a non-Timekeeper role, is inactive,
 or is assigned to an inactive site, scanning is blocked with a clear message
 and the database returns `site_assignment_required`.
 
+The Scan page's Recent Scans area uses the shared compact Attendance table
+instead of a special record-card layout on desktop and tablet. It remains
+responsive on phones.
+
+## Timekeeper Attendance Page
+
+Add `/timekeeper/attendance` and a corresponding navigation item. The page
+contains:
+
+- the assigned site as locked context
+- search by employee
+- status and overtime filters
+- From and To date filters
+- date/employee/time/hours sorting
+- site-grouped attendance table
+- CSV and XLSX export actions
+
+The page and export endpoint both scope rows to:
+
+```text
+site_id = profile.assigned_site_id
+AND (check_in_by = profile.id OR check_out_by = profile.id)
+```
+
+The Timekeeper cannot submit site IDs to broaden this scope.
+
 ## Attendance Session Rules
 
 Check In:
@@ -149,6 +276,92 @@ mixed in the current site workflow.
 Manual fields remain editable by a Timekeeper only on sessions where they
 recorded Check In or Check Out. Admins and Super Admins retain existing access.
 
+## Site-Grouped Attendance Ledgers
+
+Admin and Super Admin attendance pages render a separate collapsible ledger
+section for each selected site. Timekeeper attendance renders only its assigned
+site section. Search, date range, status, overtime, sorting, and pagination are
+applied by the server before grouping.
+
+Attendance table rows contain only:
+
+- Date
+- Employee Name
+- Job Site
+- Check In
+- Check Out
+- Hours
+- Check In By
+- Check Out By
+- Overtime Check
+- Attendance Status
+- Preview action
+
+The following values are excluded from attendance tables:
+
+- Employee ID/PIN
+- Check In GPS
+- Check Out GPS
+- Assignment Check
+- Payroll Status
+- Notes
+
+Employee ID/PIN remains part of employee master data. GPS remains required
+evidence and may be shown in the attendance detail/preview. Assignment Check,
+Payroll Status, and Notes remain stored and manually editable but are excluded
+from ledgers and exports. Overtime Check remains visible and editable.
+
+## Attendance Exports
+
+Both CSV and XLSX exports require a valid inclusive From/To date range.
+
+Admin and Super Admin:
+
+- select one or multiple active/inactive sites
+- export only rows from the selected sites and date range
+- may not submit an empty site selection
+
+Timekeeper:
+
+- cannot select sites
+- automatically uses their assigned site
+- exports only sessions where they recorded Check In or Check Out
+- uses the same From/To date contract
+
+Both formats contain the same ten columns, in this order:
+
+1. Date
+2. Employee Name
+3. Job Site
+4. Check In
+5. Check Out
+6. Hours
+7. Check In By
+8. Check Out By
+9. Overtime Check
+10. Attendance Status
+
+XLSX creates one worksheet per selected site, with safe unique worksheet
+names. CSV emits one dataset sorted by Site, Date, and Check In because CSV
+cannot contain multiple worksheets. Filenames include the date range and,
+when one site is selected, the site code.
+
+Export endpoints validate role, allowed site scope, dates, and the maximum
+10,000-row limit on the server. Invalid or reversed dates return a clear
+validation error.
+
+## Overview by Site
+
+The Admin overview replaces the single Active Employees total with one summary
+section per active site. Each site shows:
+
+- active employees whose Current Site matches the site
+- assigned active Timekeeper names
+- attendance sessions for the current day
+
+An **Unassigned** summary appears when active employees have no Current Site.
+The organization-wide Active Sites and Sessions Today totals remain available.
+
 ## Mapbox Removal
 
 Remove application code and configuration:
@@ -173,10 +386,9 @@ Previously applied migrations remain in version control. They are not edited
 or deleted because production migration history is immutable; the new
 migration reverses the obsolete Mapbox schema safely.
 
-The attendance UI continues to show raw coordinates and accuracy for Check In
-and Check Out. The attendance ledger replaces **GPS location** with compact
-**GPS evidence** based on captured coordinates. No external map or place-name
-provider is used.
+Attendance detail and preview surfaces may continue to show raw coordinates
+and accuracy for Check In and Check Out. Attendance ledgers and CSV/XLSX
+exports show no GPS columns. No external map or place-name provider is used.
 
 ## Error Handling
 
@@ -186,6 +398,8 @@ provider is used.
 | Assigned site is inactive or missing | `site_assignment_required` |
 | Browser attempts to choose another site | No site field is accepted; database uses profile assignment |
 | Employee has an open session at another site | `no_open_session` for Check Out |
+| Imported employee references an unknown site | Row-level import error |
+| Export has no sites, invalid dates, or reversed dates | Validation error; no file generated |
 | GPS is missing or stale | Existing `gps_required` behavior |
 | QR is invalid or revoked | Existing QR error behavior |
 
@@ -210,17 +424,29 @@ Automated tests cover:
 - create/update audit entries containing site assignments
 - Super Admin forms showing and clearing the site selector by role
 - prevention of site deactivation while active Timekeepers are assigned
+- employee Current Site create, edit, import, grouping, and reassignment
+- proof that Current Site never restricts scanning
+- Crew removal from schemas, forms, imports, tables, and types
+- shared search/sort/filter URL parsing and whitelisted query construction
+- site-grouped employee and attendance ledgers
+- site-grouped Overview counts and Timekeeper names
 - Timekeeper page loading only the assigned site
+- dedicated Timekeeper Attendance navigation, filters, and exports
+- compact Recent Scans table
 - scan requests omitting client-selected site IDs
 - database scan rejection without an assignment
 - database scan derivation of the assigned site
 - prevention of cross-site Check Out
 - Timekeeper ledger queries filtered by recorder and assigned site
 - Admin attendance remaining organization-wide
+- Admin multi-site and Timekeeper single-site export authorization
+- date-range validation for CSV and XLSX
+- identical ten-column CSV/XLSX contracts
+- one XLSX worksheet per selected site
 - Mapbox files, environment variables, API routes, UI copy, and dependencies
   being absent
-- retained GPS coordinates and accuracy in tables, previews, detail pages, and
-  exports
+- retained GPS coordinates and accuracy in previews and detail pages but not
+  ledgers or exports
 
 Verification includes unit/component tests, SQL assertions, Supabase security
 and performance advisors, strict TypeScript, lint, production build, and
@@ -234,5 +460,7 @@ desktop/tablet/phone browser checks.
 4. Verify anonymous callers cannot execute attendance mutations.
 5. Verify Frank can record only Atlas attendance.
 6. Verify Admin and Super Admin attendance remains unfiltered.
-7. Remove Mapbox secrets from local and Vercel configuration.
-8. Deploy the application and run the documented smoke test.
+7. Verify employee Current Site grouping and unrestricted cross-site scanning.
+8. Verify Admin multi-site and Timekeeper assigned-site exports for CSV/XLSX.
+9. Remove Mapbox secrets from local and Vercel configuration.
+10. Deploy the application and run the documented smoke test.
