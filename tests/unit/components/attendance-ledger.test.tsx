@@ -95,4 +95,33 @@ describe("AttendanceLedger", () => {
     expect(screen.getByText("Manual review")).toBeInTheDocument();
     expect(screen.queryByText("Correct display times")).not.toBeInTheDocument();
   });
+
+  it("uses a paginated desktop table for the Timekeeper attendance page", () => {
+    const rows = Array.from({ length: 26 }, (_, index) => ({
+      ...row,
+      id: `session-${index + 1}`,
+      employee_name_snapshot: `Worker ${index + 1}`,
+    }));
+
+    render(
+      <AttendanceLedger
+        displayMode="paginated-table"
+        role="timekeeper"
+        rows={rows}
+      />,
+    );
+
+    expect(screen.getByRole("table")).toHaveClass(
+      "attendance-ledger--desktop",
+    );
+    expect(screen.getByText("Worker 1")).toBeInTheDocument();
+    expect(screen.queryByText("Worker 26")).not.toBeInTheDocument();
+    expect(screen.getByText("Page 1 of 2")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Next page" }));
+
+    expect(screen.queryByText("Worker 1")).not.toBeInTheDocument();
+    expect(screen.getByText("Worker 26")).toBeInTheDocument();
+    expect(screen.getByText("Page 2 of 2")).toBeInTheDocument();
+  });
 });

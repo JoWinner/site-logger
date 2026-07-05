@@ -81,7 +81,11 @@ export default async function TimekeeperAttendancePage({
           }))}
           to={query.to}
         />
-        <AttendanceLedger role={profile.role} rows={sessions} />
+        <AttendanceLedger
+          displayMode="paginated-table"
+          role={profile.role}
+          rows={sessions}
+        />
       </article>
     </section>
   );

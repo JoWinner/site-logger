@@ -27,11 +27,21 @@ function overtimeLabel(value: boolean | null): string {
 export function AttendanceLedger({
   rows,
   role,
+  displayMode = "responsive",
 }: {
   rows: AttendanceLedgerRow[];
   role: AppRole;
+  displayMode?: "responsive" | "paginated-table";
 }) {
   const [selected, setSelected] = useState<AttendanceLedgerRow | null>(null);
+  const [page, setPage] = useState(1);
+  const isPaginatedTable = displayMode === "paginated-table";
+  const pageSize = 25;
+  const pageCount = Math.max(1, Math.ceil(rows.length / pageSize));
+  const currentPage = Math.min(page, pageCount);
+  const visibleRows = isPaginatedTable
+    ? rows.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+    : rows;
 
   if (rows.length === 0) {
     return <p className="empty-copy">No attendance sessions yet.</p>;
@@ -39,8 +49,16 @@ export function AttendanceLedger({
 
   return (
     <>
-      <div className="responsive-table-wrap attendance-ledger-wrap">
-        <table className="responsive-table attendance-ledger">
+      <div
+        className={`responsive-table-wrap attendance-ledger-wrap${
+          isPaginatedTable ? " attendance-ledger-wrap--desktop" : ""
+        }`}
+      >
+        <table
+          className={`responsive-table attendance-ledger${
+            isPaginatedTable ? " attendance-ledger--desktop" : ""
+          }`}
+        >
           <caption>Attendance ledger</caption>
           <thead>
             <tr>
@@ -58,7 +76,7 @@ export function AttendanceLedger({
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => (
+            {visibleRows.map((row) => (
               <tr
                 className="attendance-ledger__row"
                 key={row.id}
@@ -116,6 +134,28 @@ export function AttendanceLedger({
           </tbody>
         </table>
       </div>
+      {isPaginatedTable && pageCount > 1 ? (
+        <nav aria-label="Attendance table pagination" className="pagination">
+          <button
+            className="button button--compact"
+            disabled={currentPage === 1}
+            onClick={() => setPage(currentPage - 1)}
+            type="button"
+          >
+            Previous
+          </button>
+          <span>Page {currentPage} of {pageCount}</span>
+          <button
+            aria-label="Next page"
+            className="button button--compact"
+            disabled={currentPage === pageCount}
+            onClick={() => setPage(currentPage + 1)}
+            type="button"
+          >
+            Next
+          </button>
+        </nav>
+      ) : null}
       <AttendancePreviewDialog
         onClose={() => setSelected(null)}
         open={selected !== null}
