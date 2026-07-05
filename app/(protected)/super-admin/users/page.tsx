@@ -71,7 +71,7 @@ export default async function UsersPage({
             {filtered.map((user) => (
               <details className="record-row" key={user.id}>
                 <summary><span className={`status-pip ${user.is_active ? "is-active" : ""}`} /><strong>{user.display_name}</strong><span>@{user.username}</span><span>{user.role.replace("_", " ")}</span></summary>
-                <div className="record-row__body"><UserForm sites={sites} user={{ id: user.id, displayName: user.display_name, role: user.role, assignedSiteId: user.assigned_site_id, isActive: user.is_active }} /></div>
+                <div className="record-row__body"><UserForm sites={sites} user={{ id: user.id, username: user.username, displayName: user.display_name, role: user.role, assignedSiteId: user.assigned_site_id, isActive: user.is_active }} /></div>
               </details>
             ))}
           </div>

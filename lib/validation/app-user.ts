@@ -20,18 +20,20 @@ function requireTimekeeperSite<
   }
 }
 
+const usernameSchema = z.string().transform((value, context) => {
+  try {
+    return normalizeUsername(value);
+  } catch (error) {
+    context.addIssue({
+      code: "custom",
+      message: error instanceof Error ? error.message : "Invalid username.",
+    });
+    return z.NEVER;
+  }
+});
+
 export const createAppUserSchema = z.object({
-  username: z.string().transform((value, context) => {
-    try {
-      return normalizeUsername(value);
-    } catch (error) {
-      context.addIssue({
-        code: "custom",
-        message: error instanceof Error ? error.message : "Invalid username.",
-      });
-      return z.NEVER;
-    }
-  }),
+  username: usernameSchema,
   displayName: z.string().trim().min(1).max(120),
   password: z.string().min(10).max(200),
   ...assignedUserFields,
@@ -42,6 +44,7 @@ export const createAppUserSchema = z.object({
 }));
 
 export const updateAppUserSchema = z.object({
+  username: usernameSchema,
   displayName: z.string().trim().min(1).max(120),
   ...assignedUserFields,
   isActive: z.boolean(),

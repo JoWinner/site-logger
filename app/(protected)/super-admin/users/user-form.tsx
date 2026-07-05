@@ -8,6 +8,7 @@ import type { AppRole, SiteRow } from "@/lib/database.types";
 
 interface ExistingUser {
   id: string;
+  username: string;
   displayName: string;
   role: AppRole;
   assignedSiteId: string | null;
@@ -39,6 +40,7 @@ export function UserForm({
       body: JSON.stringify(
         user
           ? {
+              username: form.get("username"),
               displayName: form.get("displayName"),
               role,
               assignedSiteId:
@@ -70,7 +72,7 @@ export function UserForm({
 
   return (
     <form className={user ? "record-form record-form--compact" : "record-form"} onSubmit={submit}>
-      {!user ? <label className="field"><span>Username *</span><input name="username" required /></label> : null}
+      <label className="field"><span>Username *</span><input autoComplete="username" defaultValue={user?.username} name="username" required /></label>
       <label className="field"><span>Display name *</span><input defaultValue={user?.displayName} name="displayName" required /></label>
       <label className="field"><span>Role *</span><select name="role" onChange={(event) => setRole(event.target.value as AppRole)} value={role}><option value="timekeeper">Timekeeper</option><option value="admin">Admin</option><option value="super_admin">Super Admin</option></select></label>
       {role === "timekeeper" ? (

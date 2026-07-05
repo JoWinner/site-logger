@@ -4,10 +4,12 @@ import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import {
   assertSuperAdminContinuity,
   type createAppUserSchema,
+  type updateAppUserSchema,
 } from "@/lib/validation/app-user";
 import type { z } from "zod";
 
 type CreateUserInput = z.infer<typeof createAppUserSchema>;
+type UpdateUserInput = z.infer<typeof updateAppUserSchema>;
 
 async function validateAssignedSite(
   admin: ReturnType<typeof createAdminSupabaseClient>,
@@ -53,6 +55,29 @@ export function buildUserAuditEntry({
     entity_id: userId,
     previous_values: previousValues,
     new_values: newValues,
+  };
+}
+
+export function buildAuthUserUpdate({
+  currentUsername,
+  username,
+  isActive,
+  password,
+}: {
+  currentUsername: string;
+  username: string;
+  isActive: boolean;
+  password: string | null;
+}) {
+  return {
+    ...(currentUsername !== username
+      ? {
+          email: usernameToInternalEmail(username),
+          email_confirm: true,
+        }
+      : {}),
+    ...(password ? { password } : {}),
+    ban_duration: isActive ? "none" : "876000h",
   };
 }
 
@@ -120,13 +145,7 @@ export async function createApplicationUser(
 
 export async function updateApplicationUser(
   id: string,
-  input: {
-    displayName: string;
-    role: AppRole;
-    assignedSiteId: string | null;
-    isActive: boolean;
-    password: string | null;
-  },
+  input: UpdateUserInput,
   actorId: string,
 ) {
   const admin = createAdminSupabaseClient();
@@ -158,9 +177,24 @@ export async function updateApplicationUser(
     activeSuperAdminCount: count ?? 0,
   });
 
+  const { data: usernameOwner, error: usernameLookupError } = await admin
+    .from("profiles")
+    .select("id")
+    .eq("username", input.username)
+    .neq("id", id)
+    .maybeSingle();
+
+  if (usernameLookupError) {
+    throw new Error("Username availability could not be checked.");
+  }
+  if (usernameOwner) {
+    throw new Error("That username already exists.");
+  }
+
   const { error: profileError } = await admin
     .from("profiles")
     .update({
+      username: input.username,
       display_name: input.displayName,
       role: input.role,
       assigned_site_id: assignedSiteId,
@@ -168,18 +202,50 @@ export async function updateApplicationUser(
     })
     .eq("id", id);
 
-  if (profileError) throw new Error("Application profile could not be updated.");
-
-  const authUpdate: { password?: string; ban_duration?: string } = {
-    ban_duration: input.isActive ? "none" : "876000h",
-  };
-  if (input.password) authUpdate.password = input.password;
+  if (profileError) {
+    throw new Error(
+      profileError.code === "23505"
+        ? "That username already exists."
+        : "Application profile could not be updated.",
+    );
+  }
 
   const { error: authError } = await admin.auth.admin.updateUserById(
     id,
-    authUpdate,
+    buildAuthUserUpdate({
+      currentUsername: current.username,
+      username: input.username,
+      isActive: input.isActive,
+      password: input.password,
+    }),
   );
-  if (authError) throw new Error("Authentication account could not be updated.");
+  if (authError) {
+    const { error: rollbackError } = await admin
+      .from("profiles")
+      .update({
+        username: current.username,
+        display_name: current.display_name,
+        role: current.role,
+        assigned_site_id: current.assigned_site_id,
+        is_active: current.is_active,
+      })
+      .eq("id", id);
+
+    if (rollbackError) {
+      throw new Error(
+        "Authentication account could not be updated and the profile could not be restored.",
+      );
+    }
+
+    const usernameConflict =
+      current.username !== input.username &&
+      /already|registered|exists|duplicate/i.test(authError.message);
+    throw new Error(
+      usernameConflict
+        ? "That username already exists."
+        : "Authentication account could not be updated.",
+    );
+  }
 
   const { error: auditError } = await admin.from("audit_logs").insert(
     buildUserAuditEntry({
@@ -187,12 +253,14 @@ export async function updateApplicationUser(
       action: "user_updated",
       userId: id,
       previousValues: {
+        username: current.username,
         display_name: current.display_name,
         role: current.role,
         assigned_site_id: current.assigned_site_id,
         is_active: current.is_active,
       },
       newValues: {
+        username: input.username,
         display_name: input.displayName,
         role: input.role,
         assigned_site_id: assignedSiteId,

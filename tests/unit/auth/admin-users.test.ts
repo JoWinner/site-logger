@@ -3,8 +3,12 @@ import { describe, expect, it } from "vitest";
 import {
   assertSuperAdminContinuity,
   createAppUserSchema,
+  updateAppUserSchema,
 } from "@/lib/validation/app-user";
-import { buildUserAuditEntry } from "@/lib/auth/admin-users";
+import {
+  buildAuthUserUpdate,
+  buildUserAuditEntry,
+} from "@/lib/auth/admin-users";
 
 describe("createAppUserSchema", () => {
   it("normalizes usernames and requires a site for timekeepers", () => {
@@ -57,6 +61,38 @@ describe("createAppUserSchema", () => {
         assignedSiteId: "40eb6ccb-b455-479e-83f4-d88f2fd7ecb2",
       }),
     ).toThrow();
+  });
+});
+
+describe("updateAppUserSchema", () => {
+  it("normalizes the username when a Super Admin updates a user", () => {
+    expect(
+      updateAppUserSchema.parse({
+        username: " New.Foreman ",
+        displayName: "New Foreman",
+        role: "admin",
+        assignedSiteId: null,
+        isActive: true,
+        password: null,
+      }).username,
+    ).toBe("new.foreman");
+  });
+});
+
+describe("buildAuthUserUpdate", () => {
+  it("updates the internal login email when the username changes", () => {
+    expect(
+      buildAuthUserUpdate({
+        currentUsername: "old.foreman",
+        username: "new.foreman",
+        isActive: true,
+        password: null,
+      }),
+    ).toEqual({
+      email: "new.foreman@site-logger.local",
+      email_confirm: true,
+      ban_duration: "none",
+    });
   });
 });
 

@@ -74,4 +74,41 @@ describe("UserForm", () => {
 
     expect(screen.queryByLabelText("Assigned site *")).not.toBeInTheDocument();
   });
+
+  it("lets a Super Admin update an existing user's username", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({}), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <UserForm
+        sites={sites}
+        user={{
+          id: "user-id",
+          username: "old.foreman",
+          displayName: "Old Foreman",
+          role: "admin",
+          assignedSiteId: null,
+          isActive: true,
+        }}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("Username *"), {
+      target: { value: "new.foreman" },
+    });
+    fireEvent.submit(
+      screen.getByRole("button", { name: "Update user" }).closest("form")!,
+    );
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({
+      username: "new.foreman",
+      displayName: "Old Foreman",
+    });
+  });
 });
