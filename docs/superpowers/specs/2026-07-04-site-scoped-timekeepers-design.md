@@ -62,9 +62,11 @@ Employee Current Site is intentionally not part of scan authorization.
 Attendance always records the site of the Timekeeper who captured the event,
 regardless of the employee's organizational Current Site.
 
-Table state is represented by URL query parameters. Search, sort, filter,
-pagination, selected sites, and date ranges therefore survive refreshes and
-operate on the full server query instead of only the rows currently rendered.
+Persistent ledger state is represented by URL query parameters. Search, sort,
+filter, pagination, selected sites, and date ranges therefore survive
+refreshes and operate on the full server query instead of only the rows
+currently rendered. Import preview controls remain local to the unsaved
+uploaded file because preview rows do not yet exist in the database.
 
 ## Profile Data Model
 
@@ -438,7 +440,7 @@ Automated tests cover:
 - database scan derivation of the assigned site
 - prevention of cross-site Check Out
 - Timekeeper ledger queries filtered by recorder and assigned site
-- Admin attendance remaining organization-wide
+- Admin attendance retaining organization-wide access while supporting filters
 - Admin multi-site and Timekeeper single-site export authorization
 - date-range validation for CSV and XLSX
 - identical ten-column CSV/XLSX contracts
@@ -459,7 +461,7 @@ desktop/tablet/phone browser checks.
 3. Verify Frank is assigned to Atlas.
 4. Verify anonymous callers cannot execute attendance mutations.
 5. Verify Frank can record only Atlas attendance.
-6. Verify Admin and Super Admin attendance remains unfiltered.
+6. Verify Admin and Super Admin retain organization-wide attendance access.
 7. Verify employee Current Site grouping and unrestricted cross-site scanning.
 8. Verify Admin multi-site and Timekeeper assigned-site exports for CSV/XLSX.
 9. Remove Mapbox secrets from local and Vercel configuration.
