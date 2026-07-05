@@ -8,9 +8,9 @@ describe("parseImportFile", () => {
     const file = new File(
       [
         [
-          "Employee Name,Employee ID / PIN,Trade / Role,Crew,Active",
-          "Marcus Hill,E001,Carpenter,Crew A,Yes",
-          "Daniel Reyes,,Mason,Crew B,No",
+          "Employee Name,Employee ID / PIN,Trade / Role,Site Code,Active",
+          "Marcus Hill,E001,Carpenter,ATLAS,Yes",
+          "Daniel Reyes,,Mason,,No",
         ].join("\n"),
       ],
       "employees.csv",
@@ -26,7 +26,7 @@ describe("parseImportFile", () => {
           fullName: "Marcus Hill",
           employeeIdPin: "E001",
           tradeRole: "Carpenter",
-          crew: "Crew A",
+          siteCode: "ATLAS",
           isActive: "Yes",
         },
       },
@@ -36,7 +36,7 @@ describe("parseImportFile", () => {
           fullName: "Daniel Reyes",
           employeeIdPin: null,
           tradeRole: "Mason",
-          crew: "Crew B",
+          siteCode: null,
           isActive: "No",
         },
       },
@@ -49,8 +49,8 @@ describe("parseImportFile", () => {
     sheet.addRow(["Company employee import"]);
     sheet.addRow([]);
     sheet.addRow(["Review before upload"]);
-    sheet.addRow(["Employee Name", "Employee ID", "Trade", "Crew"]);
-    sheet.addRow(["Andre Cole", "E003", "Electrician", "Crew C"]);
+    sheet.addRow(["Employee Name", "Employee ID", "Trade", "Site Name"]);
+    sheet.addRow(["Andre Cole", "E003", "Electrician", "Atlas"]);
     const buffer = await workbook.xlsx.writeBuffer();
     const file = new File([buffer], "employees.xlsx", {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -65,7 +65,7 @@ describe("parseImportFile", () => {
           fullName: "Andre Cole",
           employeeIdPin: "E003",
           tradeRole: "Electrician",
-          crew: "Crew C",
+          siteName: "Atlas",
         },
       },
     ]);

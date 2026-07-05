@@ -38,14 +38,23 @@ export async function POST(
     const rows = await parseImportFile(file, entity);
 
     if (entity === "employees") {
-      const { data, error } = await supabase
-        .from("employees")
-        .select("*")
-        .order("full_name");
-      if (error) throw new Error("Employee records could not be loaded.");
+      const [
+        { data, error },
+        { data: siteData, error: siteError },
+      ] = await Promise.all([
+        supabase.from("employees").select("*").order("full_name"),
+        supabase.from("sites").select("*").order("name"),
+      ]);
+      if (error || siteError) {
+        throw new Error("Employee records could not be loaded.");
+      }
       return NextResponse.json(
         summarizeImport(
-          classifyEmployeeRows(rows, (data ?? []) as unknown as EmployeeRow[]),
+          classifyEmployeeRows(
+            rows,
+            (data ?? []) as unknown as EmployeeRow[],
+            (siteData ?? []) as unknown as SiteRow[],
+          ),
         ),
       );
     }

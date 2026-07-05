@@ -9,9 +9,10 @@ import {
   ResponsiveTable,
   type ResponsiveColumn,
 } from "@/components/data/responsive-table";
-import type { EmployeeRow } from "@/lib/database.types";
+import type { EmployeeRow, SiteRow } from "@/lib/database.types";
 
-const columns: ResponsiveColumn<EmployeeRow>[] = [
+function employeeColumns(sites: Map<string, SiteRow>): ResponsiveColumn<EmployeeRow>[] {
+  return [
   {
     key: "status",
     label: "Status",
@@ -41,9 +42,12 @@ const columns: ResponsiveColumn<EmployeeRow>[] = [
     render: (employee) => employee.trade_role ?? "Not set",
   },
   {
-    key: "crew",
-    label: "Crew",
-    render: (employee) => employee.crew ?? "Not set",
+    key: "site",
+    label: "Current site",
+    render: (employee) =>
+      employee.current_site_id
+        ? sites.get(employee.current_site_id)?.name ?? "Unknown site"
+        : "Unassigned",
   },
   {
     key: "updated",
@@ -52,10 +56,18 @@ const columns: ResponsiveColumn<EmployeeRow>[] = [
       <time dateTime={employee.updated_at}>{employee.updated_at.slice(0, 10)}</time>
     ),
   },
-];
+  ];
+}
 
-export function EmployeeLedger({ employees }: { employees: EmployeeRow[] }) {
+export function EmployeeLedger({
+  employees,
+  sites,
+}: {
+  employees: EmployeeRow[];
+  sites: SiteRow[];
+}) {
   const [editing, setEditing] = useState<EmployeeRow | null>(null);
+  const sitesById = new Map(sites.map((site) => [site.id, site]));
 
   return (
     <>
@@ -80,7 +92,7 @@ export function EmployeeLedger({ employees }: { employees: EmployeeRow[] }) {
           </div>
         )}
         caption="Employee ledger"
-        columns={columns}
+        columns={employeeColumns(sitesById)}
         emptyMessage="No employees yet. Add or import the first records."
         rows={employees}
       />
@@ -97,9 +109,10 @@ export function EmployeeLedger({ employees }: { employees: EmployeeRow[] }) {
               fullName: editing.full_name,
               employeeIdPin: editing.employee_id_pin,
               tradeRole: editing.trade_role,
-              crew: editing.crew,
+              currentSiteId: editing.current_site_id,
               isActive: editing.is_active,
             }}
+            sites={sites}
           />
         ) : null}
       </RecordDialog>

@@ -3,21 +3,25 @@
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
+import type { SiteRow } from "@/lib/database.types";
+
 interface ExistingEmployee {
   id: string;
   fullName: string;
   employeeIdPin: string | null;
   tradeRole: string | null;
-  crew: string | null;
+  currentSiteId: string | null;
   isActive: boolean;
 }
 
 export function EmployeeForm({
   employee,
   compact = false,
+  sites,
 }: {
   employee?: ExistingEmployee;
   compact?: boolean;
+  sites: SiteRow[];
 }) {
   const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
@@ -39,7 +43,7 @@ export function EmployeeForm({
           fullName: form.get("fullName"),
           employeeIdPin: form.get("employeeIdPin"),
           tradeRole: form.get("tradeRole"),
-          crew: form.get("crew"),
+          currentSiteId: form.get("currentSiteId"),
           isActive: form.get("isActive") === "on",
         }),
       },
@@ -73,8 +77,18 @@ export function EmployeeForm({
         <input defaultValue={employee?.tradeRole ?? ""} name="tradeRole" />
       </label>
       <label className="field">
-        <span>Crew</span>
-        <input defaultValue={employee?.crew ?? ""} name="crew" />
+        <span>Current site</span>
+        <select
+          defaultValue={employee?.currentSiteId ?? ""}
+          name="currentSiteId"
+        >
+          <option value="">Unassigned</option>
+          {sites.map((site) => (
+            <option key={site.id} value={site.id}>
+              {site.site_code} · {site.name}
+            </option>
+          ))}
+        </select>
       </label>
       <label className="check-field">
         <input defaultChecked={employee?.isActive ?? true} name="isActive" type="checkbox" />

@@ -24,14 +24,6 @@ const session: AttendanceSessionRow = {
   check_out_accuracy_metres: null,
   check_in_by: "timekeeper-1",
   check_out_by: null,
-  check_in_location_label: "Pokuase Station, Greater Accra, Ghana",
-  check_in_location_feature_id: "mapbox-id",
-  check_in_location_resolution_status: "resolved",
-  check_in_location_resolved_at: "2026-07-04T07:00:02.000Z",
-  check_out_location_label: null,
-  check_out_location_feature_id: null,
-  check_out_location_resolution_status: null,
-  check_out_location_resolved_at: null,
   worked_minutes: null,
   overtime_check: null,
   assignment_check: null,
@@ -47,18 +39,25 @@ const profile: ProfileRow = {
   username: "keeper",
   display_name: "Ama Mensah",
   role: "timekeeper",
+  assigned_site_id: "site-1",
   is_active: true,
   created_at: "2026-07-01T00:00:00.000Z",
   updated_at: "2026-07-01T00:00:00.000Z",
 };
 
-function queryResult<T>(data: T) {
-  const query = {
-    select: vi.fn(() => query),
-    order: vi.fn(() => query),
-    range: vi.fn().mockResolvedValue({ data, error: null }),
-    in: vi.fn().mockResolvedValue({ data, error: null }),
-  };
+function queryResult<T>(data: T, terminalIn = false) {
+  const query = {} as Record<string, ReturnType<typeof vi.fn>>;
+  query.select = vi.fn(() => query);
+  query.order = vi.fn(() => query);
+  query.eq = vi.fn(() => query);
+  query.gte = vi.fn(() => query);
+  query.lte = vi.fn(() => query);
+  query.ilike = vi.fn(() => query);
+  query.or = vi.fn(() => query);
+  query.range = vi.fn().mockResolvedValue({ data, error: null });
+  query.in = terminalIn
+    ? vi.fn().mockResolvedValue({ data, error: null })
+    : vi.fn(() => query);
   return query;
 }
 
@@ -67,10 +66,9 @@ describe("loadAttendanceLedger", () => {
     vi.unstubAllEnvs();
   });
 
-  it("places the timekeeper display name before the ID", async () => {
-    vi.stubEnv("MAPBOX_GEOCODING_MODE", "permanent");
+  it("places the display name first and applies site and recorder scopes", async () => {
     const sessionQuery = queryResult([session]);
-    const profileQuery = queryResult([profile]);
+    const profileQuery = queryResult([profile], true);
     const supabase = {
       from: vi
         .fn()
@@ -78,11 +76,16 @@ describe("loadAttendanceLedger", () => {
         .mockReturnValueOnce(profileQuery),
     };
 
-    const rows = await loadAttendanceLedger(supabase as never, { limit: 25 });
+    const rows = await loadAttendanceLedger(supabase as never, {
+      limit: 25,
+      siteIds: ["site-1"],
+      recorderId: "timekeeper-1",
+    });
 
     expect(rows[0].checkInTimekeeperName).toBe("Ama Mensah");
-    expect(rows[0].checkInLocationLabel).toBe(
-      "Pokuase Station, Greater Accra, Ghana",
+    expect(sessionQuery.in).toHaveBeenCalledWith("site_id", ["site-1"]);
+    expect(sessionQuery.or).toHaveBeenCalledWith(
+      "check_in_by.eq.timekeeper-1,check_out_by.eq.timekeeper-1",
     );
   });
 });

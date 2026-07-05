@@ -24,6 +24,7 @@ html {
 body {
   min-height: 100vh;
   margin: 0;
+  overflow-x: clip;
   color: var(--ink);
   background:
     linear-gradient(90deg, rgb(23 63 53 / 4%) 1px, transparent 1px) 0 0 /
@@ -650,6 +651,10 @@ textarea {
   grid-template-columns: minmax(260px, 0.8fr) minmax(460px, 1.7fr);
 }
 
+.split-layout > * {
+  min-width: 0;
+}
+
 .master-data-stack {
   display: grid;
   gap: 22px;
@@ -659,8 +664,150 @@ textarea {
   max-width: 760px;
 }
 
+.ledger-toolbar {
+  display: grid;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 22px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  background: #f4efe4;
+  grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 1fr));
+}
+
+.ledger-toolbar__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.site-ledger-groups {
+  display: grid;
+  gap: 18px;
+}
+
+.site-ledger-group {
+  min-width: 0;
+  border: 1px solid var(--ink);
+  background: var(--white);
+}
+
+.site-ledger-group > summary {
+  display: flex;
+  min-height: 58px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  cursor: pointer;
+  color: var(--white);
+  background: var(--forest);
+  font-family: var(--font-display), sans-serif;
+  text-transform: uppercase;
+}
+
+.site-ledger-group__body {
+  min-width: 0;
+  padding: 12px;
+}
+
+.site-overview-grid {
+  display: grid;
+  gap: 18px;
+  margin-top: 24px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.site-overview-card {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--ink);
+  background: var(--paper);
+}
+
+.site-overview-card header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.site-overview-card header span,
+.site-overview-card__keepers > span {
+  color: var(--signal-dark);
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.site-overview-card h2 {
+  margin: 4px 0 0;
+  font-family: var(--font-display), sans-serif;
+  text-transform: uppercase;
+}
+
+.site-overview-card header > strong {
+  font-family: var(--font-display), sans-serif;
+  font-size: 2.5rem;
+}
+
+.site-overview-card dl {
+  display: grid;
+  gap: 8px;
+  margin: 18px 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.site-overview-card dl div,
+.site-overview-card__keepers {
+  display: grid;
+  gap: 4px;
+}
+
+.site-overview-card dt {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.site-overview-card dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+.export-controls {
+  display: grid;
+  gap: 16px;
+}
+
+.export-controls__fields {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 240px));
+}
+
+.export-site-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--line);
+}
+
+.export-site-picker legend {
+  padding: 0 6px;
+  font-family: var(--font-display), sans-serif;
+  text-transform: uppercase;
+}
+
+.export-controls__locked-site {
+  padding: 14px;
+  border-left: 4px solid var(--signal);
+  background: #eee8dc;
+}
+
 .responsive-table-wrap {
   width: 100%;
+  min-width: 0;
 }
 
 .responsive-table {
@@ -1122,13 +1269,17 @@ textarea {
   }
 
   .role-nav {
-    display: flex;
+    display: grid;
     width: 100%;
-    overflow-x: auto;
+    overflow: visible;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .role-nav a {
-    min-width: max-content;
+    min-width: 0;
+    min-height: 58px;
+    padding: 9px 8px;
+    font-size: 0.92rem;
   }
 
   .metric-grid,
@@ -1715,6 +1866,23 @@ textarea {
 }
 
 @media (max-width: 900px) {
+  .ledger-toolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ledger-toolbar__search,
+  .ledger-toolbar__actions {
+    grid-column: 1 / -1;
+  }
+
+  .site-overview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .export-controls__fields {
+    grid-template-columns: 1fr 1fr;
+  }
+
   .scan-console {
     grid-template-columns: 1fr;
   }
@@ -1735,5 +1903,27 @@ textarea {
 
   .attendance-preview__summary {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .ledger-toolbar,
+  .export-controls__fields {
+    grid-template-columns: 1fr;
+  }
+
+  .ledger-toolbar__search,
+  .ledger-toolbar__actions {
+    grid-column: auto;
+  }
+
+  .ledger-toolbar__actions,
+  .export-controls .form-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .site-ledger-group__body {
+    padding: 8px;
   }
 }

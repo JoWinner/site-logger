@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 
 import { PrintableBadge } from "@/components/attendance/printable-badge";
 import { bulkBadgePrintTitle } from "@/lib/qr/filenames";
-import type { EmployeeRow } from "@/lib/database.types";
+import type { EmployeeRow, SiteRow } from "@/lib/database.types";
 
 interface IssuedBadge {
   employeeId: string;
@@ -18,8 +18,16 @@ interface BadgePreview extends Omit<IssuedBadge, "rawToken"> {
   qrDataUrl: string;
 }
 
-export function BulkBadgeDesk({ employees }: { employees: EmployeeRow[] }) {
+export function BulkBadgeDesk({
+  employees,
+  sites = [],
+}: {
+  employees: EmployeeRow[];
+  sites?: SiteRow[];
+}) {
   const [query, setQuery] = useState("");
+  const [siteId, setSiteId] = useState("");
+  const [sort, setSort] = useState("name");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [badges, setBadges] = useState<BadgePreview[]>([]);
   const [message, setMessage] = useState<string | null>(null);
@@ -27,16 +35,34 @@ export function BulkBadgeDesk({ employees }: { employees: EmployeeRow[] }) {
 
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
-    if (!term) return employees;
-    return employees.filter((employee) =>
-      [
-        employee.full_name,
-        employee.employee_id_pin,
-        employee.trade_role,
-        employee.crew,
-      ].some((value) => value?.toLowerCase().includes(term)),
-    );
-  }, [employees, query]);
+    const siteNames = new Map(sites.map((site) => [site.id, site.name]));
+    return employees
+      .filter(
+        (employee) =>
+          (!siteId || (employee.current_site_id ?? "unassigned") === siteId)
+          && (!term
+            || [
+              employee.full_name,
+              employee.employee_id_pin,
+              employee.trade_role,
+              employee.current_site_id
+                ? siteNames.get(employee.current_site_id)
+                : "Unassigned",
+            ].some((value) => value?.toLowerCase().includes(term))),
+      )
+      .sort((a, b) => {
+        const values = {
+          name: [a.full_name, b.full_name],
+          id: [a.employee_id_pin ?? "", b.employee_id_pin ?? ""],
+          trade: [a.trade_role ?? "", b.trade_role ?? ""],
+          site: [
+            a.current_site_id ? siteNames.get(a.current_site_id) ?? "" : "Unassigned",
+            b.current_site_id ? siteNames.get(b.current_site_id) ?? "" : "Unassigned",
+          ],
+        }[sort] ?? [a.full_name, b.full_name];
+        return values[0].localeCompare(values[1]);
+      });
+  }, [employees, query, siteId, sites, sort]);
 
   function toggleEmployee(employeeId: string) {
     setSelected((current) => {
@@ -114,10 +140,29 @@ export function BulkBadgeDesk({ employees }: { employees: EmployeeRow[] }) {
           <span>Search employees</span>
           <input
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Name, ID/PIN, trade or crew"
+            placeholder="Name, ID/PIN or trade"
             type="search"
             value={query}
           />
+        </label>
+        <label className="field">
+          <span>Current site</span>
+          <select onChange={(event) => setSiteId(event.target.value)} value={siteId}>
+            <option value="">All sites</option>
+            {sites.map((site) => (
+              <option key={site.id} value={site.id}>{site.name}</option>
+            ))}
+            <option value="unassigned">Unassigned</option>
+          </select>
+        </label>
+        <label className="field">
+          <span>Sort employees</span>
+          <select onChange={(event) => setSort(event.target.value)} value={sort}>
+            <option value="name">Name</option>
+            <option value="id">ID / PIN</option>
+            <option value="trade">Trade / role</option>
+            <option value="site">Current site</option>
+          </select>
         </label>
         <div className="bulk-badge-toolbar">
           <button className="button" onClick={selectFiltered} type="button">
@@ -154,7 +199,6 @@ export function BulkBadgeDesk({ employees }: { employees: EmployeeRow[] }) {
               <strong>{employee.full_name}</strong>
               <span>{employee.employee_id_pin ?? "No ID / PIN"}</span>
               <span>{employee.trade_role ?? "Role not set"}</span>
-              <span>{employee.crew ?? "Crew not set"}</span>
             </label>
           ))}
           {filtered.length === 0 ? (

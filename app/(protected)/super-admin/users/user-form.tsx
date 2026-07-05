@@ -4,17 +4,25 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
 import { PasswordField } from "@/components/forms/password-field";
-import type { AppRole } from "@/lib/database.types";
+import type { AppRole, SiteRow } from "@/lib/database.types";
 
 interface ExistingUser {
   id: string;
   displayName: string;
   role: AppRole;
+  assignedSiteId: string | null;
   isActive: boolean;
 }
 
-export function UserForm({ user }: { user?: ExistingUser }) {
+export function UserForm({
+  sites = [],
+  user,
+}: {
+  sites?: SiteRow[];
+  user?: ExistingUser;
+}) {
   const router = useRouter();
+  const [role, setRole] = useState<AppRole>(user?.role ?? "timekeeper");
   const [message, setMessage] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -32,14 +40,18 @@ export function UserForm({ user }: { user?: ExistingUser }) {
         user
           ? {
               displayName: form.get("displayName"),
-              role: form.get("role"),
+              role,
+              assignedSiteId:
+                role === "timekeeper" ? form.get("assignedSiteId") : null,
               isActive: form.get("isActive") === "on",
               password: password || null,
             }
           : {
               username: form.get("username"),
               displayName: form.get("displayName"),
-              role: form.get("role"),
+              role,
+              assignedSiteId:
+                role === "timekeeper" ? form.get("assignedSiteId") : null,
               password,
             },
       ),
@@ -60,7 +72,24 @@ export function UserForm({ user }: { user?: ExistingUser }) {
     <form className={user ? "record-form record-form--compact" : "record-form"} onSubmit={submit}>
       {!user ? <label className="field"><span>Username *</span><input name="username" required /></label> : null}
       <label className="field"><span>Display name *</span><input defaultValue={user?.displayName} name="displayName" required /></label>
-      <label className="field"><span>Role *</span><select defaultValue={user?.role ?? "timekeeper"} name="role"><option value="timekeeper">Timekeeper</option><option value="admin">Admin</option><option value="super_admin">Super Admin</option></select></label>
+      <label className="field"><span>Role *</span><select name="role" onChange={(event) => setRole(event.target.value as AppRole)} value={role}><option value="timekeeper">Timekeeper</option><option value="admin">Admin</option><option value="super_admin">Super Admin</option></select></label>
+      {role === "timekeeper" ? (
+        <label className="field">
+          <span>Assigned site *</span>
+          <select
+            defaultValue={user?.assignedSiteId ?? ""}
+            name="assignedSiteId"
+            required
+          >
+            <option disabled value="">Select a site</option>
+            {sites.map((site) => (
+              <option key={site.id} value={site.id}>
+                {site.site_code} · {site.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
       <PasswordField
         autoComplete="new-password"
         label={

@@ -7,15 +7,44 @@ import {
 import { buildUserAuditEntry } from "@/lib/auth/admin-users";
 
 describe("createAppUserSchema", () => {
-  it("normalizes usernames and accepts all three roles", () => {
+  it("normalizes usernames and requires a site for timekeepers", () => {
     expect(
       createAppUserSchema.parse({
         username: " Site.Foreman ",
         displayName: "Site Foreman",
         password: "strong-pass-19",
         role: "timekeeper",
+        assignedSiteId: "40eb6ccb-b455-479e-83f4-d88f2fd7ecb2",
       }),
-    ).toMatchObject({ username: "site.foreman", role: "timekeeper" });
+    ).toMatchObject({
+      username: "site.foreman",
+      role: "timekeeper",
+      assignedSiteId: "40eb6ccb-b455-479e-83f4-d88f2fd7ecb2",
+    });
+  });
+
+  it("rejects a timekeeper without a site assignment", () => {
+    expect(
+      createAppUserSchema.safeParse({
+        username: "keeper",
+        displayName: "Keeper",
+        password: "long-password",
+        role: "timekeeper",
+        assignedSiteId: null,
+      }).success,
+    ).toBe(false);
+  });
+
+  it("clears site assignment for non-timekeeper roles", () => {
+    expect(
+      createAppUserSchema.parse({
+        username: "admin",
+        displayName: "Admin",
+        password: "long-password",
+        role: "admin",
+        assignedSiteId: null,
+      }).assignedSiteId,
+    ).toBeNull();
   });
 
   it("requires a usable initial password", () => {
@@ -25,6 +54,7 @@ describe("createAppUserSchema", () => {
         displayName: "Keeper",
         password: "short",
         role: "timekeeper",
+        assignedSiteId: "40eb6ccb-b455-479e-83f4-d88f2fd7ecb2",
       }),
     ).toThrow();
   });

@@ -1,22 +1,49 @@
-import Link from "next/link";
-
 import { AttendanceLedger } from "@/components/attendance/attendance-ledger";
+import { ExportControls } from "@/components/attendance/export-controls";
+import { LedgerToolbar } from "@/components/data/ledger-toolbar";
+import { SiteLedgerGroups } from "@/components/data/site-ledger-groups";
 import { loadAttendanceLedger } from "@/lib/attendance/ledger";
 import { requireProfile } from "@/lib/auth/session";
+import type { AttendanceStatus, SiteRow } from "@/lib/database.types";
+import { groupBySite, parseLedgerQuery } from "@/lib/tables/query-state";
+
+const ATTENDANCE_STATUSES: AttendanceStatus[] = [
+  "open",
+  "complete",
+  "incomplete",
+  "corrected",
+];
 
 export default async function AttendancePage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const { page: pageValue } = await searchParams;
-  const page = Math.max(1, Number.parseInt(pageValue ?? "1", 10) || 1);
-  const pageSize = 25;
   const { profile, supabase } = await requireProfile(["admin", "super_admin"]);
-  const sessions = await loadAttendanceLedger(supabase, {
-    limit: pageSize,
-    offset: (page - 1) * pageSize,
+  const query = parseLedgerQuery(await searchParams, {
+    sortKeys: ["date", "employee", "site", "hours", "status"] as const,
+    defaultSort: "date",
+    defaultDirection: "desc",
   });
+  const { data: siteData } = await supabase.from("sites").select("*").order("name");
+  const sites = (siteData ?? []) as unknown as SiteRow[];
+  const validSiteIds = new Set(sites.map((site) => site.id));
+  const siteIds = query.siteIds.filter((siteId) => validSiteIds.has(siteId));
+  const status = ATTENDANCE_STATUSES.includes(query.status as AttendanceStatus)
+    ? (query.status as AttendanceStatus)
+    : null;
+  const sessions = await loadAttendanceLedger(supabase, {
+    limit: 500,
+    siteIds,
+    from: query.from,
+    to: query.to,
+    search: query.search,
+    status,
+    overtime: query.overtime,
+    sort: query.sort,
+    direction: query.direction,
+  });
+  const groups = groupBySite(sessions, sites, (session) => session.site_id);
 
   return (
     <section>
@@ -24,33 +51,42 @@ export default async function AttendancePage({
         <div>
           <p className="eyebrow">Evidence · Review</p>
           <h1>Attendance ledger</h1>
-          <p>
-            Tap any record for GPS evidence, manual review, and corrections.
-          </p>
+          <p>Each site has its own searchable attendance ledger.</p>
         </div>
-        <a className="button button--signal" href="/api/exports/attendance.xlsx">
-          Export .xlsx
-        </a>
       </header>
       <article className="panel">
-        <AttendanceLedger
-          mapAvailable={Boolean(process.env.MAPBOX_ACCESS_TOKEN)}
-          role={profile.role}
-          rows={sessions}
+        <ExportControls sites={sites} />
+      </article>
+      <article className="panel">
+        <LedgerToolbar
+          direction={query.direction}
+          from={query.from}
+          includeDates
+          overtime={query.overtime}
+          search={query.search}
+          selectedSiteIds={siteIds}
+          sites={sites}
+          sort={query.sort}
+          sortOptions={[
+            { value: "date", label: "Date and time" },
+            { value: "employee", label: "Employee name" },
+            { value: "site", label: "Site name" },
+            { value: "hours", label: "Hours" },
+            { value: "status", label: "Status" },
+          ]}
+          status={status}
+          statusOptions={ATTENDANCE_STATUSES.map((value) => ({
+            value,
+            label: value[0].toUpperCase() + value.slice(1),
+          }))}
+          to={query.to}
         />
-        <nav className="pagination" aria-label="Attendance pages">
-          {page > 1 ? (
-            <Link className="button button--compact" href={`?page=${page - 1}`}>
-              Previous
-            </Link>
-          ) : <span />}
-          <span>Page {page}</span>
-          {sessions.length === pageSize ? (
-            <Link className="button button--compact" href={`?page=${page + 1}`}>
-              Next
-            </Link>
-          ) : <span />}
-        </nav>
+        <SiteLedgerGroups
+          groups={groups}
+          render={(group) => (
+            <AttendanceLedger role={profile.role} rows={group.rows} />
+          )}
+        />
       </article>
     </section>
   );

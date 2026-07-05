@@ -18,13 +18,11 @@ export function AttendancePreviewDialog({
   session,
   role,
   open,
-  mapAvailable,
   onClose,
 }: {
   session: AttendanceLedgerRow | null;
   role: AppRole;
   open: boolean;
-  mapAvailable: boolean;
   onClose: () => void;
 }) {
   const isAdmin = role === "admin" || role === "super_admin";
@@ -71,10 +69,8 @@ export function AttendancePreviewDialog({
             </p>
             <LocationEvidence
               accuracyMetres={session.check_in_accuracy_metres}
-              label={session.checkInLocationLabel}
               latitude={session.check_in_latitude}
               longitude={session.check_in_longitude}
-              mapAvailable={mapAvailable}
             />
           </section>
 
@@ -94,10 +90,8 @@ export function AttendancePreviewDialog({
             </p>
             <LocationEvidence
               accuracyMetres={session.check_out_accuracy_metres}
-              label={session.checkOutLocationLabel}
               latitude={session.check_out_latitude}
               longitude={session.check_out_longitude}
-              mapAvailable={mapAvailable}
             />
           </section>
 

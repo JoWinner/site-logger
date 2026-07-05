@@ -3,6 +3,23 @@ import { z } from "zod";
 import { normalizeUsername } from "@/lib/auth/username";
 import type { AppRole } from "@/lib/database.types";
 
+const assignedUserFields = {
+  role: z.enum(["timekeeper", "admin", "super_admin"]),
+  assignedSiteId: z.uuid().nullable(),
+};
+
+function requireTimekeeperSite<
+  T extends { role: AppRole; assignedSiteId: string | null },
+>(data: T, context: z.RefinementCtx) {
+  if (data.role === "timekeeper" && !data.assignedSiteId) {
+    context.addIssue({
+      code: "custom",
+      path: ["assignedSiteId"],
+      message: "Select an assigned site for the Timekeeper.",
+    });
+  }
+}
+
 export const createAppUserSchema = z.object({
   username: z.string().transform((value, context) => {
     try {
@@ -17,15 +34,23 @@ export const createAppUserSchema = z.object({
   }),
   displayName: z.string().trim().min(1).max(120),
   password: z.string().min(10).max(200),
-  role: z.enum(["timekeeper", "admin", "super_admin"]),
-});
+  ...assignedUserFields,
+}).superRefine(requireTimekeeperSite).transform((data) => ({
+  ...data,
+  assignedSiteId:
+    data.role === "timekeeper" ? data.assignedSiteId : null,
+}));
 
 export const updateAppUserSchema = z.object({
   displayName: z.string().trim().min(1).max(120),
-  role: z.enum(["timekeeper", "admin", "super_admin"]),
+  ...assignedUserFields,
   isActive: z.boolean(),
   password: z.string().min(10).max(200).nullable(),
-});
+}).superRefine(requireTimekeeperSite).transform((data) => ({
+  ...data,
+  assignedSiteId:
+    data.role === "timekeeper" ? data.assignedSiteId : null,
+}));
 
 export function assertSuperAdminContinuity({
   currentRole,

@@ -15,9 +15,10 @@ interface ScanResult {
   siteName?: string;
 }
 
-export function ScanConsole({ sites }: { sites: SiteRow[] }) {
+export function ScanConsole({ site }: { site: SiteRow | null }) {
   const router = useRouter();
-  const [siteId, setSiteId] = useState(sites[0]?.id ?? "");
+  const sites = site ? [site] : [];
+  const siteId = site?.id ?? "";
   const [action, setAction] = useState<AttendanceAction>("check_in");
   const [gps, setGps] = useState<GpsEvidence | null>(null);
   const [scannerOpen, setScannerOpen] = useState(false);
@@ -26,7 +27,11 @@ export function ScanConsole({ sites }: { sites: SiteRow[] }) {
 
   async function prepareScanner() {
     if (!siteId) {
-      setResult({ ok: false, code: "site_required", message: "Select a site first." });
+      setResult({
+        ok: false,
+        code: "site_assignment_required",
+        message: "Ask a Super Admin to assign your Timekeeper account to an active site.",
+      });
       return;
     }
     setPending(true);
@@ -57,7 +62,6 @@ export function ScanConsole({ sites }: { sites: SiteRow[] }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           rawToken,
-          siteId,
           action,
           deviceCapturedAt: new Date().toISOString(),
           latitude: gps.latitude,
@@ -86,7 +90,7 @@ export function ScanConsole({ sites }: { sites: SiteRow[] }) {
       <div className="scan-console__controls">
         <label className="field">
           <span>Current site</span>
-          <select disabled={scannerOpen || pending} onChange={(event) => setSiteId(event.target.value)} value={siteId}>
+          <select aria-readonly="true" disabled value={siteId}>
             {sites.map((site) => (
               <option key={site.id} value={site.id}>
                 {site.site_code} · {site.name}
@@ -112,7 +116,7 @@ export function ScanConsole({ sites }: { sites: SiteRow[] }) {
           </button>
         </fieldset>
         {!scannerOpen ? (
-          <button className="scan-trigger" disabled={pending || sites.length === 0} onClick={prepareScanner} type="button">
+          <button className="scan-trigger" disabled={pending || !site} onClick={prepareScanner} type="button">
             <span>{pending ? "Locating…" : "Capture GPS & scan"}</span>
             <strong>{action === "check_in" ? "IN" : "OUT"}</strong>
           </button>
@@ -136,7 +140,7 @@ export function ScanConsole({ sites }: { sites: SiteRow[] }) {
         ) : (
           <article className="scan-idle">
             <span>Ready</span>
-            <h2>Select the site and action, then capture GPS.</h2>
+            <h2>{site ? "Choose an action, then capture GPS." : "A site assignment is required before scanning."}</h2>
           </article>
         )}
       </div>

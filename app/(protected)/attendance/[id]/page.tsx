@@ -62,10 +62,6 @@ export default async function AttendanceDetailPage({
               <dd>{new Date(session.check_in_at).toLocaleString()}</dd>
             </div>
             <div>
-              <dt>Location</dt>
-              <dd>{session.checkInLocationLabel ?? "Name unavailable"}</dd>
-            </div>
-            <div>
               <dt>GPS</dt>
               <dd>
                 {evidenceLine(
@@ -96,10 +92,6 @@ export default async function AttendanceDetailPage({
                   ? new Date(session.check_out_at).toLocaleString()
                   : "Open session"}
               </dd>
-            </div>
-            <div>
-              <dt>Location</dt>
-              <dd>{session.checkOutLocationLabel ?? "Name unavailable"}</dd>
             </div>
             <div>
               <dt>GPS</dt>

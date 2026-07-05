@@ -14,18 +14,22 @@ function shortTime(value: string | null): string {
   });
 }
 
-function timekeeperLabel(row: AttendanceLedgerRow): string {
-  return `${row.checkInTimekeeperName ? `${row.checkInTimekeeperName} · ` : ""}${row.check_in_by.slice(0, 8)}…`;
+function timekeeperLabel(name: string | null, id: string | null): string {
+  if (!id) return "—";
+  return `${name ? `${name} · ` : ""}${id.slice(0, 8)}…`;
+}
+
+function overtimeLabel(value: boolean | null): string {
+  if (value === null) return "Not set";
+  return value ? "Yes" : "No";
 }
 
 export function AttendanceLedger({
   rows,
   role,
-  mapAvailable = false,
 }: {
   rows: AttendanceLedgerRow[];
   role: AppRole;
-  mapAvailable?: boolean;
 }) {
   const [selected, setSelected] = useState<AttendanceLedgerRow | null>(null);
 
@@ -43,10 +47,12 @@ export function AttendanceLedger({
               <th scope="col">Date</th>
               <th scope="col">Employee</th>
               <th scope="col">Site</th>
-              <th scope="col">GPS location</th>
-              <th scope="col">Time</th>
+              <th scope="col">Check in</th>
+              <th scope="col">Check out</th>
               <th scope="col">Hours</th>
-              <th scope="col">Timekeeper</th>
+              <th scope="col">Check in by</th>
+              <th scope="col">Check out by</th>
+              <th scope="col">Overtime</th>
               <th scope="col">Status</th>
               <th scope="col">Preview</th>
             </tr>
@@ -59,8 +65,8 @@ export function AttendanceLedger({
                 onClick={() => setSelected(row)}
                 onKeyDown={(event) => {
                   if (
-                    event.target === event.currentTarget &&
-                    (event.key === "Enter" || event.key === " ")
+                    event.target === event.currentTarget
+                    && (event.key === "Enter" || event.key === " ")
                   ) {
                     event.preventDefault();
                     setSelected(row);
@@ -69,27 +75,26 @@ export function AttendanceLedger({
                 tabIndex={0}
               >
                 <td data-label="Date">{row.work_date}</td>
-                <td data-label="Employee">
-                  <strong>{row.employee_name_snapshot}</strong>
-                  <small>{row.employee_id_pin_snapshot ?? "No ID / PIN"}</small>
-                </td>
+                <td data-label="Employee"><strong>{row.employee_name_snapshot}</strong></td>
                 <td data-label="Site">{row.site_name_snapshot}</td>
-                <td data-label="GPS location">
-                  {row.checkInLocationLabel ?? "Name unavailable"}
-                </td>
-                <td data-label="Time">
-                  {shortTime(row.check_in_at)}–{shortTime(row.check_out_at)}
-                </td>
+                <td data-label="Check in">{shortTime(row.check_in_at)}</td>
+                <td data-label="Check out">{shortTime(row.check_out_at)}</td>
                 <td data-label="Hours">
                   {row.worked_minutes === null
                     ? "—"
                     : (row.worked_minutes / 60).toFixed(2)}
                 </td>
-                <td data-label="Timekeeper">{timekeeperLabel(row)}</td>
+                <td data-label="Check in by">
+                  {timekeeperLabel(row.checkInTimekeeperName, row.check_in_by)}
+                </td>
+                <td data-label="Check out by">
+                  {timekeeperLabel(row.checkOutTimekeeperName, row.check_out_by)}
+                </td>
+                <td data-label="Overtime">
+                  {overtimeLabel(row.overtime_check)}
+                </td>
                 <td data-label="Status">
-                  <span
-                    className={`ledger-status ledger-status--${row.status}`}
-                  >
+                  <span className={`ledger-status ledger-status--${row.status}`}>
                     {row.status}
                   </span>
                 </td>
@@ -112,7 +117,6 @@ export function AttendanceLedger({
         </table>
       </div>
       <AttendancePreviewDialog
-        mapAvailable={mapAvailable}
         onClose={() => setSelected(null)}
         open={selected !== null}
         role={role}

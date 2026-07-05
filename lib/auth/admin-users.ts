@@ -9,6 +9,30 @@ import type { z } from "zod";
 
 type CreateUserInput = z.infer<typeof createAppUserSchema>;
 
+async function validateAssignedSite(
+  admin: ReturnType<typeof createAdminSupabaseClient>,
+  role: AppRole,
+  assignedSiteId: string | null,
+) {
+  if (role !== "timekeeper") return null;
+  if (!assignedSiteId) {
+    throw new Error("Select an assigned site for the Timekeeper.");
+  }
+
+  const { data } = await admin
+    .from("sites")
+    .select("id")
+    .eq("id", assignedSiteId)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if (!data) {
+    throw new Error("The assigned site is unavailable or inactive.");
+  }
+
+  return assignedSiteId;
+}
+
 export function buildUserAuditEntry({
   actorId,
   action,
@@ -37,6 +61,11 @@ export async function createApplicationUser(
   actorId: string,
 ) {
   const admin = createAdminSupabaseClient();
+  const assignedSiteId = await validateAssignedSite(
+    admin,
+    input.role,
+    input.assignedSiteId,
+  );
   const { data, error } = await admin.auth.admin.createUser({
     email: usernameToInternalEmail(input.username),
     password: input.password,
@@ -52,6 +81,7 @@ export async function createApplicationUser(
     username: input.username,
     display_name: input.displayName,
     role: input.role,
+    assigned_site_id: assignedSiteId,
     is_active: true,
   });
 
@@ -74,6 +104,7 @@ export async function createApplicationUser(
         username: input.username,
         display_name: input.displayName,
         role: input.role,
+        assigned_site_id: assignedSiteId,
         is_active: true,
       },
     }),
@@ -92,6 +123,7 @@ export async function updateApplicationUser(
   input: {
     displayName: string;
     role: AppRole;
+    assignedSiteId: string | null;
     isActive: boolean;
     password: string | null;
   },
@@ -106,6 +138,11 @@ export async function updateApplicationUser(
   const current = currentData as ProfileRow | null;
 
   if (!current) throw new Error("Application user not found.");
+  const assignedSiteId = await validateAssignedSite(
+    admin,
+    input.role,
+    input.assignedSiteId,
+  );
 
   const { count } = await admin
     .from("profiles")
@@ -126,6 +163,7 @@ export async function updateApplicationUser(
     .update({
       display_name: input.displayName,
       role: input.role,
+      assigned_site_id: assignedSiteId,
       is_active: input.isActive,
     })
     .eq("id", id);
@@ -151,11 +189,13 @@ export async function updateApplicationUser(
       previousValues: {
         display_name: current.display_name,
         role: current.role,
+        assigned_site_id: current.assigned_site_id,
         is_active: current.is_active,
       },
       newValues: {
         display_name: input.displayName,
         role: input.role,
+        assigned_site_id: assignedSiteId,
         is_active: input.isActive,
         password_reset: Boolean(input.password),
       },

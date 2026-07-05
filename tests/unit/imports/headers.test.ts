@@ -13,6 +13,9 @@ describe("import headers", () => {
     );
     expect(getCanonicalHeader("employees", "Worker Name")).toBe("fullName");
     expect(getCanonicalHeader("employees", "Trade / Role")).toBe("tradeRole");
+    expect(getCanonicalHeader("employees", "Site Code")).toBe("siteCode");
+    expect(getCanonicalHeader("employees", "Site Name")).toBe("siteName");
+    expect(getCanonicalHeader("employees", "Crew")).toBeNull();
   });
 
   it("normalizes common site aliases", () => {

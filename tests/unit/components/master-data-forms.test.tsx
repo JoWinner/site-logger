@@ -28,7 +28,7 @@ describe("master data forms", () => {
         }),
       ),
     );
-    render(<EmployeeForm />);
+    render(<EmployeeForm sites={[]} />);
 
     fireEvent.change(screen.getByLabelText("Employee name *"), {
       target: { value: "New Worker" },

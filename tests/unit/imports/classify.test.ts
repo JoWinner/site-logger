@@ -11,7 +11,7 @@ const existingEmployee: EmployeeRow = {
   employee_id_pin: "E001",
   full_name: "Marcus Hill",
   trade_role: "Carpenter",
-  crew: "Crew A",
+  current_site_id: null,
   is_active: true,
   created_by: null,
   updated_by: null,
@@ -20,7 +20,7 @@ const existingEmployee: EmployeeRow = {
 };
 
 const existingSite: SiteRow = {
-  id: "site-1",
+  id: "40eb6ccb-b455-479e-83f4-d88f2fd7ecb2",
   site_code: "ATLAS",
   name: "Atlas",
   is_active: true,
@@ -44,6 +44,7 @@ describe("import classification", () => {
         },
       ],
       [existingEmployee],
+      [existingSite],
     );
 
     expect(rows[0]).toMatchObject({
@@ -55,6 +56,44 @@ describe("import classification", () => {
       value: { employeeIdPin: null },
     });
     expect(rows[1].messages[0]).toMatch(/same name/i);
+  });
+
+  it("resolves employee Current Site by code or name", () => {
+    const rows = classifyEmployeeRows(
+      [
+        {
+          rowNumber: 2,
+          values: { fullName: "Andre Cole", siteCode: "atlas" },
+        },
+        {
+          rowNumber: 3,
+          values: { fullName: "Luis Rivera", siteName: "Atlas" },
+        },
+      ],
+      [],
+      [existingSite],
+    );
+
+    expect(rows.map((row) => row.value?.currentSiteId)).toEqual([
+      "40eb6ccb-b455-479e-83f4-d88f2fd7ecb2",
+      "40eb6ccb-b455-479e-83f4-d88f2fd7ecb2",
+    ]);
+  });
+
+  it("rejects an unknown employee Current Site", () => {
+    const [row] = classifyEmployeeRows(
+      [
+        {
+          rowNumber: 4,
+          values: { fullName: "Unknown Worker", siteCode: "MISSING" },
+        },
+      ],
+      [],
+      [existingSite],
+    );
+
+    expect(row).toMatchObject({ disposition: "error", value: null });
+    expect(row.messages.join(" ")).toMatch(/site/i);
   });
 
   it("updates sites by permanent Site Code", () => {
@@ -78,6 +117,7 @@ describe("import classification", () => {
     const rows = classifyEmployeeRows(
       [{ rowNumber: 8, values: { employeeIdPin: "E008" } }],
       [],
+      [existingSite],
     );
 
     expect(rows[0].disposition).toBe("error");

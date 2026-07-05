@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { UserForm } from "@/app/(protected)/super-admin/users/user-form";
+import type { SiteRow } from "@/lib/database.types";
 
 const routerState = vi.hoisted(() => ({
   refresh: vi.fn(),
@@ -10,6 +11,19 @@ const routerState = vi.hoisted(() => ({
 vi.mock("next/navigation", () => ({
   useRouter: () => routerState,
 }));
+
+const sites: SiteRow[] = [
+  {
+    id: "40eb6ccb-b455-479e-83f4-d88f2fd7ecb2",
+    site_code: "ATLAS",
+    name: "Atlas",
+    is_active: true,
+    created_by: null,
+    updated_by: null,
+    created_at: "2026-07-05T00:00:00.000Z",
+    updated_at: "2026-07-05T00:00:00.000Z",
+  },
+];
 
 describe("UserForm", () => {
   afterEach(() => {
@@ -26,7 +40,7 @@ describe("UserForm", () => {
     );
     vi.stubGlobal("fetch", fetchMock);
 
-    render(<UserForm />);
+    render(<UserForm sites={sites} />);
 
     fireEvent.change(screen.getByLabelText("Username *"), {
       target: { value: "foreman" },
@@ -46,5 +60,18 @@ describe("UserForm", () => {
     expect(screen.getByLabelText("Username *")).toHaveValue("");
     expect(screen.getByLabelText("Display name *")).toHaveValue("");
     expect(routerState.refresh).toHaveBeenCalledOnce();
+  });
+
+  it("requires a site only while the Timekeeper role is selected", () => {
+    render(<UserForm sites={sites} />);
+
+    const site = screen.getByLabelText("Assigned site *");
+    expect(site).toBeRequired();
+
+    fireEvent.change(screen.getByLabelText("Role *"), {
+      target: { value: "admin" },
+    });
+
+    expect(screen.queryByLabelText("Assigned site *")).not.toBeInTheDocument();
   });
 });

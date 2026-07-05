@@ -4,7 +4,6 @@ import { POST } from "@/app/api/scans/route";
 
 const testState = vi.hoisted(() => ({
   rpc: vi.fn(),
-  reverseGeocode: vi.fn(),
 }));
 
 vi.mock("@/lib/auth/session", () => ({
@@ -15,10 +14,6 @@ vi.mock("@/lib/auth/session", () => ({
   }),
 }));
 
-vi.mock("@/lib/location/mapbox", () => ({
-  reverseGeocode: testState.reverseGeocode,
-}));
-
 function scanRequest() {
   const capturedAt = new Date().toISOString();
   return new Request("http://localhost/api/scans", {
@@ -26,7 +21,6 @@ function scanRequest() {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       rawToken: "raw-token-with-enough-characters",
-      siteId: "1edc3fc0-06d8-4d8c-965b-a5547a341bf6",
       action: "check_in",
       deviceCapturedAt: capturedAt,
       latitude: 5.7036,
@@ -38,48 +32,33 @@ function scanRequest() {
   });
 }
 
-describe("scan location resolution", () => {
+describe("site-scoped scan recording", () => {
   afterEach(() => {
-    vi.unstubAllEnvs();
     testState.rpc.mockReset();
-    testState.reverseGeocode.mockReset();
   });
 
-  it("stores resolved labels after a permanent-mode scan", async () => {
-    vi.stubEnv("MAPBOX_GEOCODING_MODE", "permanent");
-    testState.reverseGeocode.mockResolvedValue({
-      label: "Pokuase Station, Greater Accra, Ghana",
-      featureId: "mapbox-id",
-      resolvedAt: "2026-07-04T07:00:02.000Z",
+  it("records GPS evidence without sending a client-controlled site", async () => {
+    testState.rpc.mockResolvedValueOnce({
+      data: {
+        ok: true,
+        code: "recorded",
+        event_id: "event-1",
+        session_id: "session-1",
+        employee_name: "Marcus Hill",
+        site_name: "Atlas",
+      },
+      error: null,
     });
-    testState.rpc
-      .mockResolvedValueOnce({
-        data: {
-          ok: true,
-          code: "recorded",
-          event_id: "event-1",
-          session_id: "session-1",
-          employee_name: "Marcus Hill",
-          site_name: "Pokuase",
-        },
-        error: null,
-      })
-      .mockResolvedValueOnce({ data: {}, error: null });
 
     const response = await POST(scanRequest());
     const result = await response.json();
 
     expect(response.status).toBe(200);
-    expect(result.locationLabel).toBe(
-      "Pokuase Station, Greater Accra, Ghana",
-    );
-    expect(result.locationStored).toBe(true);
-    expect(testState.rpc).toHaveBeenNthCalledWith(
-      2,
-      "resolve_attendance_location",
-      expect.objectContaining({
-        p_event_id: "event-1",
-        p_location_label: "Pokuase Station, Greater Accra, Ghana",
+    expect(result.siteName).toBe("Atlas");
+    expect(testState.rpc).toHaveBeenCalledWith(
+      "record_attendance_scan",
+      expect.not.objectContaining({
+        p_site_id: expect.anything(),
       }),
     );
   });

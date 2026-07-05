@@ -31,7 +31,7 @@ describe("MasterDataImport", () => {
                   fullName: "Marcus Hill",
                   employeeIdPin: "E001",
                   tradeRole: null,
-                  crew: null,
+                  currentSiteId: null,
                   isActive: true,
                 },
                 messages: [],

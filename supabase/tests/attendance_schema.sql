@@ -55,6 +55,17 @@ begin
 
   if exists (
     select 1
+    from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname in ('public', 'private')
+      and p.proname = 'record_attendance_scan'
+      and pg_get_function_identity_arguments(p.oid) like '%p_site_id%'
+  ) then
+    raise exception 'attendance scan must derive the site from the timekeeper';
+  end if;
+
+  if exists (
+    select 1
     from pg_class c
     join pg_namespace n on n.oid = c.relnamespace
     where n.nspname = 'public'

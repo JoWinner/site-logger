@@ -4,7 +4,6 @@ import { scanRequestSchema } from "@/lib/validation/scan";
 
 const validRequest = {
   rawToken: "abcdefghijklmnop123456789",
-  siteId: "8d6b0c7d-c323-4fc8-a448-f8d839e647e8",
   action: "check_in",
   deviceCapturedAt: "2026-07-03T10:00:00.000Z",
   latitude: 64.1466,
@@ -16,7 +15,12 @@ const validRequest = {
 
 describe("scanRequestSchema", () => {
   it("accepts a complete GPS-evidenced scan", () => {
-    expect(scanRequestSchema.parse(validRequest).action).toBe("check_in");
+    const parsed = scanRequestSchema.parse({
+      ...validRequest,
+      siteId: "8d6b0c7d-c323-4fc8-a448-f8d839e647e8",
+    });
+    expect(parsed.action).toBe("check_in");
+    expect(parsed).not.toHaveProperty("siteId");
   });
 
   it("rejects scans without GPS evidence", () => {

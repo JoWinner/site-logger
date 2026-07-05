@@ -1,20 +1,21 @@
 # Timekeeper Guide
 
 1. Sign in with the username and password issued by a Super Admin.
-2. Open **Scan console**.
-3. Select the current construction site.
-4. Select **Check in** or **Check out**.
-5. Select **Capture GPS & scan**.
-6. Allow browser location access. GPS evidence is mandatory but is not compared to a geofence.
-7. Allow camera access and hold the employee QR badge inside the frame.
-8. Wait for the green **Recorded** result and readable GPS location before
-   scanning the next employee.
+2. Confirm the assigned site shown on **Scan console**.
+3. Select **Check in** or **Check out**.
+4. Select **Capture GPS & scan**.
+5. Allow location access. Fresh GPS evidence is mandatory but is not compared
+   to a geofence.
+6. Allow camera access and hold the employee QR badge inside the frame.
+7. Wait for the green **Recorded** result before scanning the next employee.
 
-If the result says the employee is already checked in, do not scan again. If Check Out reports no open Check In, ask an Admin to review the attendance history.
+The site cannot be changed from the scan screen. Ask a Super Admin to update
+your assignment if you move to another construction site.
 
-Open any recent attendance row for a quick preview of the employee, named GPS
-location, coordinates, map, and Timekeeper. Enter the optional overtime check,
-assignment check, payroll status, or notes there. Blank means not entered;
-**No** is an explicit manual answer.
+Use **Attendance** to search, sort, and filter only the records you captured at
+your assigned site. Select a row for raw GPS evidence and optional manual
+fields. Use the export panel to choose a From/To range; CSV and XLSX downloads
+are automatically restricted to the assigned site.
 
-The first release requires an internet connection. The app displays an offline warning and does not claim that a disconnected scan succeeded.
+The app requires an internet connection and never claims a disconnected scan
+succeeded.

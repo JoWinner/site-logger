@@ -8,7 +8,7 @@ describe("employeeInputSchema", () => {
       fullName: "Ama Mensah",
       employeeIdPin: "",
       tradeRole: "Carpenter",
-      crew: "Crew A",
+      currentSiteId: "",
       isActive: true,
     });
 
@@ -20,7 +20,7 @@ describe("employeeInputSchema", () => {
       fullName: "  Kojo Boateng  ",
       employeeIdPin: " emp-19 ",
       tradeRole: "",
-      crew: "",
+      currentSiteId: "",
       isActive: true,
     });
 
@@ -28,8 +28,9 @@ describe("employeeInputSchema", () => {
       fullName: "Kojo Boateng",
       employeeIdPin: "EMP-19",
       tradeRole: null,
-      crew: null,
+      currentSiteId: null,
     });
+    expect(result).not.toHaveProperty("crew");
   });
 
   it("rejects a blank employee name", () => {

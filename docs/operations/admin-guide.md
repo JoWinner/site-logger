@@ -2,45 +2,41 @@
 
 ## Employees
 
-Use **Employees** to add or edit workers. Employee ID/PIN is optional. Deactivate former employees instead of deleting them so historical attendance stays readable.
+Use **Employees** to add or edit workers. Employee ID/PIN and Current Site are
+optional. Current Site organizes the employee ledger but never prevents a
+worker from being scanned at another site. Deactivate former employees instead
+of deleting them.
 
-Open **Issue / print QR badge** for an active employee. Reissuing a badge immediately revokes the previous QR token. The QR code contains no name or Employee ID/PIN.
+Employee CSV/XLSX imports require `Full Name`; `Employee ID/PIN`, `Trade Role`,
+`Site Code` or `Site Name`, and `Active` are optional. Unknown or ambiguous
+sites are rejected during preview.
 
-Use **Import CSV/XLSX** for batch changes. Preview the file before importing.
-Employee files require `Full Name`; `Employee ID/PIN`, `Trade Role`, `Crew`,
-and `Active` are optional. Existing records match by Employee ID/PIN. A
-same-name row without an ID remains a separate employee and is highlighted as
-a warning.
+Super Admins can issue and print up to 100 QR badges together. Reissuing a
+badge revokes the previous active token.
 
-Super Admins can open **Bulk QR badges**, filter and select up to 100 active
-employees, issue their badges atomically, and print the resulting badge grid.
-Issuing revokes each selected employee's old badge. Print before leaving the
-page because raw QR tokens are not stored in the browser after navigation.
+## Sites and Timekeepers
 
-## Sites
-
-Use **Sites** to maintain permanent site codes and names. Daily site codes and employee-to-site assignments are not used.
-
-Use **Import CSV/XLSX** to create or update sites. Site files require `Site
-Code` and `Site Name`; `Active` is optional. Existing sites match by Site Code.
+Site codes are permanent references. A Super Admin assigns every Timekeeper to
+exactly one active site from **System users**. The Timekeeper cannot choose a
+different site while scanning or exporting.
 
 ## Attendance
 
-Use **Attendance ledger** to review Check In/Check Out times, GPS coordinates and accuracy, Timekeepers, hours, manual fields, and status.
+The Attendance page groups records into a separate ledger for every site.
+Search, sort, and filter by site, status, overtime, and date. Select a row for
+the quick preview, raw GPS evidence, manual review, corrections, and the full
+attendance page.
 
-Select any attendance row to open the quick preview. It contains the readable
-GPS location, captured coordinates, static map, Timekeeper name and ID, manual
-review controls, correction controls for authorized roles, and a link to the
-full attendance page.
+Admin exports require a From/To range and one or more selected sites:
 
-Corrections adjust the displayed session summary and require a reason. Original scan events remain immutable.
+- CSV contains one dataset sorted by site and date.
+- XLSX contains one worksheet for each site.
 
-Select **Export .xlsx** to download the A–P workbook. Missing Employee ID/PIN and unset manual fields remain blank.
+Both formats contain Date, Employee Name, Job Site, Check In, Check Out, Hours,
+Check In By, Check Out By, Overtime Check, and Attendance Status.
 
 ## Manual fields
 
-- Overtime check: manual Yes, No, or blank
-- Assignment check: manual Yes, No, or blank
-- Payroll status: manual Pending, Approved, On hold, Paid, or blank
-
-The system does not calculate or approve overtime, assignment, or payroll status automatically.
+Overtime check, assignment check, payroll status, and notes remain optional
+manual fields. Only Overtime Check appears in the attendance ledger and
+exports. The system never calculates or approves these fields automatically.

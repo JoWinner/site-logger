@@ -1,15 +1,19 @@
 import { BulkBadgeDesk } from "@/components/attendance/bulk-badge-desk";
 import { requireProfile } from "@/lib/auth/session";
-import type { EmployeeRow } from "@/lib/database.types";
+import type { EmployeeRow, SiteRow } from "@/lib/database.types";
 
 export default async function BulkBadgesPage() {
   const { supabase } = await requireProfile(["super_admin"]);
-  const { data } = await supabase
-    .from("employees")
-    .select("*")
-    .eq("is_active", true)
-    .order("full_name");
+  const [{ data }, { data: siteData }] = await Promise.all([
+    supabase
+      .from("employees")
+      .select("*")
+      .eq("is_active", true)
+      .order("full_name"),
+    supabase.from("sites").select("*").order("name"),
+  ]);
   const employees = (data ?? []) as unknown as EmployeeRow[];
+  const sites = (siteData ?? []) as unknown as SiteRow[];
 
   return (
     <section>
@@ -24,7 +28,7 @@ export default async function BulkBadgesPage() {
         </div>
       </header>
       <article className="panel bulk-badge-panel">
-        <BulkBadgeDesk employees={employees} />
+        <BulkBadgeDesk employees={employees} sites={sites} />
       </article>
     </section>
   );

@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     full_name: parsed.data.fullName,
     employee_id_pin: parsed.data.employeeIdPin,
     trade_role: parsed.data.tradeRole,
-    crew: parsed.data.crew,
+    current_site_id: parsed.data.currentSiteId,
     is_active: parsed.data.isActive,
     created_by: profile.id,
     updated_by: profile.id,

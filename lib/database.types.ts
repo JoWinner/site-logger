@@ -9,7 +9,6 @@ export type Json =
 export type AppRole = "timekeeper" | "admin" | "super_admin";
 export type AttendanceAction = "check_in" | "check_out";
 export type AttendanceStatus = "open" | "complete" | "incomplete" | "corrected";
-export type LocationResolutionStatus = "unresolved" | "resolved";
 export type PayrollStatus = "pending" | "approved" | "on_hold" | "paid";
 
 type RowTable<Row, Insert, Update = Partial<Insert>> = {
@@ -24,6 +23,7 @@ export interface ProfileRow {
   username: string;
   display_name: string;
   role: AppRole;
+  assigned_site_id: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -34,7 +34,7 @@ export interface EmployeeRow {
   employee_id_pin: string | null;
   full_name: string;
   trade_role: string | null;
-  crew: string | null;
+  current_site_id: string | null;
   is_active: boolean;
   created_by: string | null;
   updated_by: string | null;
@@ -72,14 +72,6 @@ export interface AttendanceSessionRow {
   check_out_latitude: number | null;
   check_out_longitude: number | null;
   check_out_accuracy_metres: number | null;
-  check_in_location_label: string | null;
-  check_in_location_feature_id: string | null;
-  check_in_location_resolution_status: LocationResolutionStatus;
-  check_in_location_resolved_at: string | null;
-  check_out_location_label: string | null;
-  check_out_location_feature_id: string | null;
-  check_out_location_resolution_status: LocationResolutionStatus | null;
-  check_out_location_resolved_at: string | null;
   check_in_by: string;
   check_out_by: string | null;
   worked_minutes: number | null;
@@ -98,7 +90,7 @@ export type Database = {
       profiles: RowTable<
         ProfileRow,
         Pick<ProfileRow, "id" | "username" | "display_name" | "role"> &
-          Partial<Pick<ProfileRow, "is_active">>
+          Partial<Pick<ProfileRow, "assigned_site_id" | "is_active">>
       >;
       employees: RowTable<
         EmployeeRow,
@@ -109,7 +101,7 @@ export type Database = {
               | "id"
               | "employee_id_pin"
               | "trade_role"
-              | "crew"
+              | "current_site_id"
               | "is_active"
               | "created_by"
               | "updated_by"
@@ -133,7 +125,6 @@ export type Database = {
       record_attendance_scan: {
         Args: {
           p_raw_token: string;
-          p_site_id: string;
           p_action: AttendanceAction;
           p_device_captured_at: string;
           p_latitude: number;
@@ -165,15 +156,6 @@ export type Database = {
           p_rows: Json;
         };
         Returns: Json;
-      };
-      resolve_attendance_location: {
-        Args: {
-          p_event_id: string;
-          p_location_label: string;
-          p_location_feature_id: string | null;
-          p_resolved_at: string;
-        };
-        Returns: AttendanceSessionRow;
       };
       issue_bulk_qr_badges: {
         Args: {

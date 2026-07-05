@@ -36,6 +36,7 @@ function issueMessages(
 export function classifyEmployeeRows(
   rows: ParsedImportRow[],
   existing: EmployeeRow[],
+  sites: SiteRow[],
 ): ImportPreviewRow<EmployeeInput>[] {
   const byId = new Map(
     existing
@@ -48,6 +49,14 @@ export function classifyEmployeeRows(
   const names = new Set(
     existing.map((employee) => employee.full_name.trim().toLowerCase()),
   );
+  const sitesByCode = new Map(
+    sites.map((site) => [site.site_code.trim().toLowerCase(), site]),
+  );
+  const sitesByName = new Map<string, SiteRow[]>();
+  for (const site of sites) {
+    const key = site.name.trim().toLowerCase();
+    sitesByName.set(key, [...(sitesByName.get(key) ?? []), site]);
+  }
 
   return rows.map((row) => {
     const isActive = activeValue(row.values.isActive);
@@ -60,11 +69,29 @@ export function classifyEmployeeRows(
       };
     }
 
+    const siteCode = optionalString(row.values.siteCode)?.toLowerCase();
+    const siteName = optionalString(row.values.siteName)?.toLowerCase();
+    const codeMatch = siteCode ? sitesByCode.get(siteCode) : undefined;
+    const nameMatches = siteName ? sitesByName.get(siteName) ?? [] : [];
+    if (
+      (siteCode && !codeMatch)
+      || (siteName && nameMatches.length !== 1)
+      || (codeMatch && nameMatches.length === 1 && codeMatch.id !== nameMatches[0].id)
+    ) {
+      return {
+        rowNumber: row.rowNumber,
+        disposition: "error",
+        value: null,
+        messages: ["Current Site does not match one available site."],
+      };
+    }
+    const currentSiteId = codeMatch?.id ?? nameMatches[0]?.id ?? null;
+
     const parsed = employeeInputSchema.safeParse({
       fullName: optionalString(row.values.fullName),
       employeeIdPin: optionalString(row.values.employeeIdPin),
       tradeRole: optionalString(row.values.tradeRole),
-      crew: optionalString(row.values.crew),
+      currentSiteId,
       isActive,
     });
 

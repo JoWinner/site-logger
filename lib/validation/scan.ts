@@ -2,7 +2,6 @@ import { z } from "zod";
 
 export const scanRequestSchema = z.object({
   rawToken: z.string().min(16).max(512),
-  siteId: z.uuid(),
   action: z.enum(["check_in", "check_out"]),
   deviceCapturedAt: z.iso.datetime(),
   latitude: z.number().min(-90).max(90),

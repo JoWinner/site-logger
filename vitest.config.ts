@@ -10,6 +10,8 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
+    pool: "threads",
+    maxWorkers: 4,
     setupFiles: ["./vitest.setup.ts"],
     include: ["tests/**/*.test.{ts,tsx}"],
     coverage: {

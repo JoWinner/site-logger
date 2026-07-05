@@ -15,6 +15,7 @@ const ROLE_RANK: Record<AppRole, number> = {
 const NAVIGATION: Record<AppRole, NavigationItem[]> = {
   timekeeper: [
     { href: "/timekeeper", label: "Scan console", eyebrow: "Record" },
+    { href: "/timekeeper/attendance", label: "Attendance", eyebrow: "My records" },
   ],
   admin: [
     { href: "/admin", label: "Overview", eyebrow: "Today" },

@@ -5,9 +5,7 @@ import { AttendanceLedger } from "@/components/attendance/attendance-ledger";
 import type { AttendanceLedgerRow } from "@/lib/attendance/ledger";
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({
-    refresh: vi.fn(),
-  }),
+  useRouter: () => ({ refresh: vi.fn() }),
 }));
 
 const row: AttendanceLedgerRow = {
@@ -29,18 +27,8 @@ const row: AttendanceLedgerRow = {
   check_out_latitude: null,
   check_out_longitude: null,
   check_out_accuracy_metres: null,
-  check_in_location_label: "Pokuase Station, Greater Accra, Ghana",
-  check_in_location_feature_id: "mapbox-id",
-  check_in_location_resolution_status: "resolved",
-  check_in_location_resolved_at: "2026-07-04T07:00:02.000Z",
-  check_out_location_label: null,
-  check_out_location_feature_id: null,
-  check_out_location_resolution_status: null,
-  check_out_location_resolved_at: null,
   check_in_by: "timekeeper-1",
   check_out_by: null,
-  checkInLocationLabel: "Pokuase Station, Greater Accra, Ghana",
-  checkOutLocationLabel: null,
   checkInTimekeeperName: "Ama Mensah",
   checkOutTimekeeperName: null,
   worked_minutes: null,
@@ -54,16 +42,27 @@ const row: AttendanceLedgerRow = {
 };
 
 describe("AttendanceLedger", () => {
-  it("shows GPS location and Timekeeper identity in the ledger", () => {
+  it("shows only approved columns and Timekeeper identities", () => {
     render(<AttendanceLedger role="admin" rows={[row]} />);
 
     expect(
-      screen.getByRole("table", { name: "Attendance ledger" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Pokuase Station, Greater Accra, Ghana"),
-    ).toBeInTheDocument();
-    expect(screen.getByText(/Ama Mensah · timekeep/i)).toBeInTheDocument();
+      screen.getAllByRole("columnheader").map((header) => header.textContent),
+    ).toEqual([
+      "Date",
+      "Employee",
+      "Site",
+      "Check in",
+      "Check out",
+      "Hours",
+      "Check in by",
+      "Check out by",
+      "Overtime",
+      "Status",
+      "Preview",
+    ]);
+    expect(screen.getByText(/Ama Mensah/i)).toBeInTheDocument();
+    expect(screen.queryByText(/GPS location/i)).not.toBeInTheDocument();
+    expect(screen.queryByText("E001")).not.toBeInTheDocument();
   });
 
   it("opens a quick preview with every Admin action and full-page expansion", () => {
@@ -87,7 +86,6 @@ describe("AttendanceLedger", () => {
 
   it("does not expose correction controls to Timekeepers", () => {
     render(<AttendanceLedger role="timekeeper" rows={[row]} />);
-
     fireEvent.click(
       screen.getByRole("button", {
         name: "Open attendance preview for Marcus Hill",

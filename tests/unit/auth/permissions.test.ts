@@ -13,6 +13,7 @@ describe("role permissions", () => {
     expect(getHomeForRole("timekeeper")).toBe("/timekeeper");
     expect(getNavigationForRole("timekeeper").map((item) => item.href)).toEqual([
       "/timekeeper",
+      "/timekeeper/attendance",
     ]);
   });
 

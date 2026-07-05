@@ -17,6 +17,8 @@ test-results/
 # Local tooling
 .codex-tmp/
 .worktrees/
+.eslintcache
+supabase/.temp/
 *.tsbuildinfo
 .pnpm-install*.log
 .next-start*.log

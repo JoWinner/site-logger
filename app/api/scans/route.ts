@@ -3,7 +3,6 @@ import { NextResponse } from "next/server";
 import { validateGpsEvidence } from "@/lib/attendance/gps";
 import { getScanErrorMessage } from "@/lib/attendance/scan-errors";
 import { requireProfile } from "@/lib/auth/session";
-import { reverseGeocode } from "@/lib/location/mapbox";
 import { scanRequestSchema } from "@/lib/validation/scan";
 
 interface ScanRpcResult {
@@ -21,7 +20,7 @@ interface ScanRpcResult {
 const STATUS_BY_CODE: Record<string, number> = {
   invalid_qr: 404,
   inactive_employee: 409,
-  inactive_site: 409,
+  site_assignment_required: 409,
   gps_required: 400,
   already_checked_in: 409,
   no_open_session: 409,
@@ -37,7 +36,7 @@ export async function POST(request: Request) {
 
   if (!parsed.success) {
     return NextResponse.json(
-      { ok: false, code: "invalid_request", message: "Complete the site, action, GPS, and QR scan." },
+      { ok: false, code: "invalid_request", message: "Complete the action, GPS, and QR scan." },
       { status: 400 },
     );
   }
@@ -60,16 +59,10 @@ export async function POST(request: Request) {
     );
   }
 
-  const location = await reverseGeocode(
-    parsed.data.latitude,
-    parsed.data.longitude,
-  );
-
   const { data, error } = await supabase.rpc(
     "record_attendance_scan",
     {
       p_raw_token: parsed.data.rawToken,
-      p_site_id: parsed.data.siteId,
       p_action: parsed.data.action,
       p_device_captured_at: parsed.data.deviceCapturedAt,
       p_latitude: parsed.data.latitude,
@@ -98,30 +91,10 @@ export async function POST(request: Request) {
     );
   }
 
-  let locationStored = false;
-  if (
-    process.env.MAPBOX_GEOCODING_MODE === "permanent" &&
-    location &&
-    result.event_id
-  ) {
-    const { error: locationError } = await supabase.rpc(
-      "resolve_attendance_location",
-      {
-        p_event_id: result.event_id,
-        p_location_label: location.label,
-        p_location_feature_id: location.featureId,
-        p_resolved_at: location.resolvedAt,
-      } as never,
-    );
-    locationStored = !locationError;
-  }
-
   return NextResponse.json({
     ...result,
     employeeName: result.employee_name,
     siteName: result.site_name,
     sessionId: result.session_id,
-    locationLabel: location?.label ?? null,
-    locationStored,
   });
 }

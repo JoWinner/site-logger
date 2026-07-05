@@ -17,7 +17,10 @@ export const employeeInputSchema = z.object({
     .optional()
     .transform((value) => (value ? value.toUpperCase() : null)),
   tradeRole: nullableText(120),
-  crew: nullableText(120),
+  currentSiteId: z
+    .union([z.uuid(), z.literal(""), z.null()])
+    .optional()
+    .transform((value) => value || null),
   isActive: z.boolean().default(true),
 });
 
